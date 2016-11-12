@@ -15,7 +15,7 @@ Fork of [aubricus/print_progress.py](https://gist.github.com/aubricus/f91fb55dc6
  * Define the maximum number of displayed messages, but log files will keep them all
  * Static class usage
  
- `![example2-runtime.gif](https://github.com/peepall/FancyLogger/blob/master/example2-runtime.gif)
+ ![example2-runtime.gif](https://github.com/peepall/FancyLogger/blob/master/example2-runtime.gif)
  
  ```python
 #!/bin/env/python
