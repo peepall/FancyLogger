@@ -40,11 +40,11 @@ class App(object):
         FancyLogger.info('Start processing things')
 
         # Iterator usage
-        for bt in FancyLogger(list=workload,
+        for work in FancyLogger(list=workload,
                               task_progress_object=TaskProgress(total=None,
                                                                 prefix='Main task',
                                                                 keep_alive=True)):
-            bt.process()
+            work.process()
 
         FancyLogger.info('End of processing ({} objects)'.format(len(workload)))
         FancyLogger.flush()
