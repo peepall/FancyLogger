@@ -1,7 +1,7 @@
 #!/bin/env/python
 # -*- coding: utf-8 -*-
 
-import time, sys, os, logging
+import time, sys, os, logging, uuid
 from collections import OrderedDict
 
 from logging import getLogger, Formatter
@@ -86,7 +86,7 @@ class FancyLogger(object):
     # When a task is marked for deletion, it is added in this list for next redraw to process it
     todelete = []
 
-    #-------------- Customizable parameters
+    # ------------- Customizable parameters
     # Cycling list of log messages below the progress bars
     messages = None
     # Defines the vertical space (in bar number) to keep at all times between progress bars section and messages section
@@ -98,7 +98,7 @@ class FancyLogger(object):
     # Minimum number of seconds at maximum completion before a progress bar is removed from display
     # The progress bar may vanish at a further time as the redraw rate depends upon chrono AND method calls
     task_millis_to_removal = None
-    #--------------
+    # -------------
 
 
     @classmethod
@@ -321,7 +321,7 @@ class FancyLogger(object):
                 prefix,
                 suffix='',
                 decimals=0,
-                bar_length=100,
+                bar_length=60,
                 keep_alive=False,
                 display_time=False):
         """
@@ -530,3 +530,40 @@ class FancyLogger(object):
             cls.appendMessage(message)
 
         cls.log.critical('\t{}'.format(text))
+
+
+    # --------------------------------------------------------------------
+    # Iterator implementation
+    def __init__(self, list, task_progress_object=None):
+        self.list = list
+        self.list_length = len(list)
+        self.task_id = uuid.uuid4()
+        self.index = 0
+
+        if task_progress_object:
+            # Force total attribute
+            task_progress_object.total = self.list_length
+        else:
+            task_progress_object = TaskProgress(total=self.list_length,
+                                                display_time=True,
+                                                prefix='Progress')
+
+        # Create a task progress
+        FancyLogger.setTaskObject(task_id=self.task_id,
+                                  task_progress_object=task_progress_object)
+
+
+    def __iter__(self):
+        return self
+
+
+    def __next__(self):
+        if self.index >= self.list_length:
+            raise StopIteration
+        else:
+            self.index += 1
+            FancyLogger.update(task_id=self.task_id,
+                               progress=self.index)
+
+            return self.list[self.index - 1]
+    #---------------------------------------------------------------------
