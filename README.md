@@ -18,7 +18,7 @@ Fork of [aubricus/print_progress.py](https://gist.github.com/aubricus/f91fb55dc6
  ## Iterator usage
  ![example2-runtime.gif](https://github.com/peepall/FancyLogger/blob/master/example2-runtime.gif)
   
- ```python
+```python
 #!/bin/env/python
 # coding: utf-8
 
