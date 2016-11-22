@@ -1,5 +1,6 @@
 # FancyLogger
 Fork of [aubricus/print_progress.py](https://gist.github.com/aubricus/f91fb55dc6ba5557fbab06119420dd6a) originated from [StackOverflow's Greenstick](http://stackoverflow.com/a/34325723) to allow using multiple progress bars along with regular message logger.  
+Available on [PyPi](https://pypi.python.org/pypi/FancyLogger).
   
   
  * Support for multiple progress bars  
