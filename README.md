@@ -24,12 +24,10 @@ Available on [PyPi](https://pypi.python.org/pypi/FancyLogger).
 # coding: utf-8
 
 import os
-import sys
 import time
 from multiprocessing import Process
 from random import randrange
 
-sys.path.append('../')
 from FancyLogger import FancyLogger, TaskProgress
 
 
@@ -108,11 +106,9 @@ if __name__ == '__main__':
 #!/bin/env/python
 # coding: utf-8
 
-import sys
 import time
 from random import randrange
 
-sys.path.append('../')
 from FancyLogger import FancyLogger, TaskProgress
 
 

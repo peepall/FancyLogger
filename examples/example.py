@@ -1,11 +1,9 @@
 #!/bin/env/python
 # coding: utf-8
 
-import sys
 import time
 from random import randrange
 
-sys.path.append('../')
 from FancyLogger import FancyLogger, TaskProgress
 
 

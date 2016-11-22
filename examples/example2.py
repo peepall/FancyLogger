@@ -2,12 +2,10 @@
 # coding: utf-8
 
 import os
-import sys
 import time
 from multiprocessing import Process
 from random import randrange
 
-sys.path.append('../')
 from FancyLogger import FancyLogger, TaskProgress
 
 
