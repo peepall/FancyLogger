@@ -1,5 +1,5 @@
 #!/bin/env/python
-# -*- coding: utf-8 -*-
+# coding: utf-8
 
 import time
 from random import randrange
@@ -14,12 +14,12 @@ class App(object):
 
         # Different configurations for demo
 
-        # FancyLogger.init(permanent_progressbar_slots=5)
-        # FancyLogger.init(permanent_progressbar_slots=3,
-        #                  message_number=5,
-        #                  task_seconds_to_removal=1)
-        FancyLogger.init(message_number=15,
-                         task_millis_to_removal=0)
+        # logger = FancyLogger(permanent_progressbar_slots=5)
+        # logger = FancyLogger(permanent_progressbar_slots=3,
+        #                      message_number=5,
+        #                      task_seconds_to_removal=1)
+        logger = FancyLogger(message_number=15,
+                             task_millis_to_removal=0)
 
         # Define new tasks
         tasks = [TaskProgress(total=150,
@@ -36,45 +36,46 @@ class App(object):
                  TaskProgress(total=50,
                               prefix='Almost done !',
                               display_time=True)
-                                ]
+                 ]
 
         # Add tasks into the logger
         for i, t in enumerate(tasks):
-            FancyLogger.setTaskObject(task_id='task{}'.format(i), task_progress_object=t)
+            logger.set_task_object(task_id='task{}'.format(i), task_progress_object=t)
 
         for i in range(1, 200):
 
             random = randrange(0, 5)
             if random == 0:
-                FancyLogger.info('I went to the supermarket yesterday :)')
+                logger.info('This is an info :)')
             elif random == 1:
-                FancyLogger.warning('Someone tried to rob me!')
+                logger.warning('You should read this carefully!')
             elif random == 2:
-                FancyLogger.debug('An apple fell to the ground...')
+                logger.debug('Don\'t bother read this')
             elif random == 3:
-                FancyLogger.error('I got punched in the face while stealing a lollipop :(')
+                logger.error('Something went wrong :(')
             elif random == 4:
-                FancyLogger.critical('Hit by a car x_x')
+                logger.critical('Ouch x_x')
 
             random = randrange(0, 4)
             if random == 0:
-                FancyLogger.update(task_id='task0', progress=i)
+                logger.update(task_id='task0', progress=i)
             elif random == 1:
-                FancyLogger.update(task_id='task1', progress=i*random)
+                logger.update(task_id='task1', progress=i*random)
             elif random == 2:
-                FancyLogger.update(task_id='task2', progress=i*random)
+                logger.update(task_id='task2', progress=i*random)
             elif random == 3:
-                FancyLogger.update(task_id='task3', progress=i*random)
+                logger.update(task_id='task3', progress=i*random)
 
             # Change settings during execution
             if i == 50:
-                FancyLogger.init(permanent_progressbar_slots=3,
-                                 message_number=5)
+                logger.set_configuration(permanent_progressbar_slots=3,
+                                         message_number=5)
 
             time.sleep(0.15)
 
-        FancyLogger.info('Bye bye :)')
-        FancyLogger.flush()
+        logger.info('Bye bye :)')
+        logger.flush()
+        logger.terminate()
 
 if __name__ == '__main__':
     App.example()

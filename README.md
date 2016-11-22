@@ -13,62 +13,86 @@ Fork of [aubricus/print_progress.py](https://gist.github.com/aubricus/f91fb55dc6
  * Multiple progress bars will stay left-aligned  
  * Keep space for permanent progress bar slots  
  * Define the maximum number of displayed messages, but log files will keep them all  
- * Static class usage  
+ * Python's multiprocessing support
   
  ## Iterator usage
  ![example2-runtime.gif](https://github.com/peepall/FancyLogger/blob/master/example2-runtime.gif)
   
  ```python
 #!/bin/env/python
-# -*- coding: utf-8 -*-
+# coding: utf-8
 
-import time, uuid
+import os
+import time
+from multiprocessing import Process
 from random import randrange
 
 from FancyLogger import FancyLogger, TaskProgress
 
 
-class SomeWork(object):
+def pid(text):
+    return '[{}] : {}'.format(os.getpid(), text)
 
-    def __init__(self):
-        self.sub_progressbar = randrange(0, 35)
-        self.sub_progressbar_list = range(randrange(50, 150))
 
-        self.uuid = uuid.uuid4()
+class WorkerClass(Process):
 
-    def process(self):
-        FancyLogger.info(self.uuid)
+    def __init__(self, logger):
+        super(WorkerClass, self).__init__()
 
-        if self.sub_progressbar == 5:
-            for i in FancyLogger(list=self.sub_progressbar_list):
-                time.sleep(.05)
+        self.logger = logger
 
-        time.sleep(.1)
+        # Define a random progress bar
+        self.enumerable_data = range(randrange(50, 500))
+
+    def run(self):
+        self.logger.info(pid('Hello there :)'))
+
+        # Here we simulate some work using a progress bar iterator
+        for _ in self.logger.progress(enumerable=self.enumerable_data,
+                                      task_progress_object=TaskProgress(total=None,  # Total is computed by iterator
+                                                                        prefix=pid('Progress'),
+                                                                        keep_alive=False,
+                                                                        display_time=True)):
+            time.sleep(.01)
+
+        self.logger.info(pid('See you later!'))
 
 
 class App(object):
 
+    def __init__(self):
+        super(App, self).__init__()
+
     @classmethod
     def example(cls):
 
-        FancyLogger.init(permanent_progressbar_slots=1)
+        # Configure and start the logger process
+        logger = FancyLogger(permanent_progressbar_slots=9)
 
-        # Create data for demo
-        workload = []
-        for i in range(randrange(100, 150)):
-            workload.append(SomeWork())
+        # Create a random list of worker processes
+        workers = [WorkerClass(logger) for _ in range(randrange(5, 10))]
 
-        FancyLogger.info('Start processing things')
+        logger.info('[main] : Start processing things')
 
-        # Iterator usage
-        for work in FancyLogger(list=workload,
-                              task_progress_object=TaskProgress(total=None,
-                                                                prefix='Main task',
-                                                                keep_alive=True)):
-            work.process()
+        # Start processes
+        for w in workers:
+            w.start()
 
-        FancyLogger.info('End of processing ({} objects)'.format(len(workload)))
-        FancyLogger.flush()
+        # Wait for processes one by one, using a progress bar iterator for the main thread
+        for w in logger.progress(enumerable=workers,
+                                 task_progress_object=TaskProgress(total=None,  # Total is computed by iterator
+                                                                   prefix='Main task',
+                                                                   keep_alive=True)):
+            w.join()
+
+        logger.info('[main] : End of processing ({} objects)'.format(len(workers)))
+
+        # Display log messages and progress bars as they are right now, to see their last state before exiting
+        # Indeed the logger uses a refresh rate that can be set during initialization. If you do not call flush method
+        # then you might miss the last messages and progress bar states that have not been displayed yet
+        logger.flush()
+        # Stop the logger process
+        logger.terminate()
 
 if __name__ == '__main__':
     App.example()
@@ -79,7 +103,7 @@ if __name__ == '__main__':
   
 ```python
 #!/bin/env/python
-# -*- coding: utf-8 -*-
+# coding: utf-8
 
 import time
 from random import randrange
@@ -94,12 +118,12 @@ class App(object):
 
         # Different configurations for demo
 
-        # FancyLogger.init(permanent_progressbar_slots=5)
-        # FancyLogger.init(permanent_progressbar_slots=3,
-        #                  message_number=5,
-        #                  task_seconds_to_removal=1)
-        FancyLogger.init(message_number=15,
-                         task_millis_to_removal=0)
+        # logger = FancyLogger(permanent_progressbar_slots=5)
+        # logger = FancyLogger(permanent_progressbar_slots=3,
+        #                      message_number=5,
+        #                      task_seconds_to_removal=1)
+        logger = FancyLogger(message_number=15,
+                             task_millis_to_removal=0)
 
         # Define new tasks
         tasks = [TaskProgress(total=150,
@@ -116,45 +140,46 @@ class App(object):
                  TaskProgress(total=50,
                               prefix='Almost done !',
                               display_time=True)
-                                ]
+                 ]
 
         # Add tasks into the logger
         for i, t in enumerate(tasks):
-            FancyLogger.setTaskObject(task_id='task{}'.format(i), task_progress_object=t)
+            logger.set_task_object(task_id='task{}'.format(i), task_progress_object=t)
 
         for i in range(1, 200):
 
             random = randrange(0, 5)
             if random == 0:
-                FancyLogger.info('I went to the supermarket yesterday :)')
+                logger.info('This is an info :)')
             elif random == 1:
-                FancyLogger.warning('Someone tried to rob me!')
+                logger.warning('You should read this carefully!')
             elif random == 2:
-                FancyLogger.debug('An apple fell to the ground...')
+                logger.debug('Don\'t bother read this')
             elif random == 3:
-                FancyLogger.error('I got punched in the face while stealing a lollipop :(')
+                logger.error('Something went wrong :(')
             elif random == 4:
-                FancyLogger.critical('Hit by a car x_x')
+                logger.critical('Ouch x_x')
 
             random = randrange(0, 4)
             if random == 0:
-                FancyLogger.update(task_id='task0', progress=i)
+                logger.update(task_id='task0', progress=i)
             elif random == 1:
-                FancyLogger.update(task_id='task1', progress=i*random)
+                logger.update(task_id='task1', progress=i*random)
             elif random == 2:
-                FancyLogger.update(task_id='task2', progress=i*random)
+                logger.update(task_id='task2', progress=i*random)
             elif random == 3:
-                FancyLogger.update(task_id='task3', progress=i*random)
+                logger.update(task_id='task3', progress=i*random)
 
             # Change settings during execution
             if i == 50:
-                FancyLogger.init(permanent_progressbar_slots=3,
-                                 message_number=5)
+                logger.set_configuration(permanent_progressbar_slots=3,
+                                         message_number=5)
 
             time.sleep(0.15)
 
-        FancyLogger.info('Bye bye :)')
-        FancyLogger.flush()
+        logger.info('Bye bye :)')
+        logger.flush()
+        logger.terminate()
 
 if __name__ == '__main__':
     App.example()
