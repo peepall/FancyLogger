@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <link href='https://fonts.googleapis.com/css?family=Chivo:900' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/github-dark.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print">
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <title>Fancylogger by peepall</title>
+  </head>
+
+  <body>
+    <div id="container">
+      <div class="inner">
+
+        <header>
+          <h1>Fancylogger</h1>
+          <h2>Fork of aubricus/print_progress.py originated from StackOverflow&#39;s Greenstick to allow using multiple progress bars along with regular message logger.</h2>
+        </header>
+
+        <section id="downloads" class="clearfix">
+          <a href="https://github.com/peepall/FancyLogger/zipball/master" id="download-zip" class="button"><span>Download .zip</span></a>
+          <a href="https://github.com/peepall/FancyLogger/tarball/master" id="download-tar-gz" class="button"><span>Download .tar.gz</span></a>
+          <a href="https://github.com/peepall/FancyLogger" id="view-on-github" class="button"><span>View on GitHub</span></a>
+        </section>
+
+        <hr>
+
+        <section id="main_content">
+          <h1>
+<a id="fancylogger" class="anchor" href="#fancylogger" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>FancyLogger</h1>
+
+<p>Fork of <a href="https://gist.github.com/aubricus/f91fb55dc6ba5557fbab06119420dd6a">aubricus/print_progress.py</a> originated from <a href="http://stackoverflow.com/a/34325723">StackOverflow's Greenstick</a> to allow using multiple progress bars along with regular message logger.  </p>
+
+<ul>
+<li>Support for multiple progress bars<br>
+</li>
+<li>Auto-scrolling message logger below the progress bars<br>
+</li>
+<li>Configurable decimals for percentage<br>
+</li>
+<li>Display elapsed time in human readable format from seconds to weeks<br>
+</li>
+<li>Display a prefix to the left of the progress bar<br>
+</li>
+<li>Display a suffix to the right of the progress bar<br>
+</li>
+<li>Keep alive even when completed<br>
+</li>
+<li>Displayed length of the progress bar can vary<br>
+</li>
+<li>Multiple progress bars will stay left-aligned<br>
+</li>
+<li>Keep space for permanent progress bar slots<br>
+</li>
+<li>Define the maximum number of displayed messages, but log files will keep them all<br>
+</li>
+<li>
+<p>Python's multiprocessing support</p>
+
+<h2>
+<a id="iterator-usage" class="anchor" href="#iterator-usage" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Iterator usage</h2>
+
+<p><img src="https://github.com/peepall/FancyLogger/blob/master/example2-runtime.gif" alt="example2-runtime.gif"></p>
+</li>
+</ul>
+
+<div class="highlight highlight-source-python"><pre><span class="pl-c">#!/bin/env/python</span>
+<span class="pl-c"># coding: utf-8</span>
+
+<span class="pl-k">import</span> os
+<span class="pl-k">import</span> time
+<span class="pl-k">from</span> multiprocessing <span class="pl-k">import</span> Process
+<span class="pl-k">from</span> random <span class="pl-k">import</span> randrange
+
+<span class="pl-k">from</span> FancyLogger <span class="pl-k">import</span> FancyLogger, TaskProgress
+
+
+<span class="pl-k">def</span> <span class="pl-en">pid</span>(<span class="pl-smi">text</span>):
+    <span class="pl-k">return</span> <span class="pl-s"><span class="pl-pds">'</span>[<span class="pl-c1">{}</span>] : <span class="pl-c1">{}</span><span class="pl-pds">'</span></span>.format(os.getpid(), text)
+
+
+<span class="pl-k">class</span> <span class="pl-en">WorkerClass</span>(<span class="pl-e">Process</span>):
+
+    <span class="pl-k">def</span> <span class="pl-c1">__init__</span>(<span class="pl-smi"><span class="pl-smi">self</span></span>, <span class="pl-smi">logger</span>):
+        <span class="pl-c1">super</span>(WorkerClass, <span class="pl-v">self</span>).<span class="pl-c1">__init__</span>()
+
+        <span class="pl-v">self</span>.logger <span class="pl-k">=</span> logger
+
+        <span class="pl-c"># Define a random progress bar</span>
+        <span class="pl-v">self</span>.enumerable_data <span class="pl-k">=</span> <span class="pl-c1">range</span>(randrange(<span class="pl-c1">50</span>, <span class="pl-c1">500</span>))
+
+    <span class="pl-k">def</span> <span class="pl-en">run</span>(<span class="pl-smi"><span class="pl-smi">self</span></span>):
+        <span class="pl-v">self</span>.logger.info(pid(<span class="pl-s"><span class="pl-pds">'</span>Hello there :)<span class="pl-pds">'</span></span>))
+
+        <span class="pl-c"># Here we simulate some work using a progress bar iterator</span>
+        <span class="pl-k">for</span> _ <span class="pl-k">in</span> <span class="pl-v">self</span>.logger.progress(<span class="pl-v">enumerable</span><span class="pl-k">=</span><span class="pl-v">self</span>.enumerable_data,
+                                      <span class="pl-v">task_progress_object</span><span class="pl-k">=</span>TaskProgress(<span class="pl-v">total</span><span class="pl-k">=</span><span class="pl-c1">None</span>,  <span class="pl-c"># Total is computed by iterator</span>
+                                                                        <span class="pl-v">prefix</span><span class="pl-k">=</span>pid(<span class="pl-s"><span class="pl-pds">'</span>Progress<span class="pl-pds">'</span></span>),
+                                                                        <span class="pl-v">keep_alive</span><span class="pl-k">=</span><span class="pl-c1">False</span>,
+                                                                        <span class="pl-v">display_time</span><span class="pl-k">=</span><span class="pl-c1">True</span>)):
+            time.sleep(<span class="pl-c1">.01</span>)
+
+        <span class="pl-v">self</span>.logger.info(pid(<span class="pl-s"><span class="pl-pds">'</span>See you later!<span class="pl-pds">'</span></span>))
+
+
+<span class="pl-k">class</span> <span class="pl-en">App</span>(<span class="pl-c1">object</span>):
+
+    <span class="pl-k">def</span> <span class="pl-c1">__init__</span>(<span class="pl-smi"><span class="pl-smi">self</span></span>):
+        <span class="pl-c1">super</span>(App, <span class="pl-v">self</span>).<span class="pl-c1">__init__</span>()
+
+    <span class="pl-en">@</span><span class="pl-c1">classmethod</span>
+    <span class="pl-k">def</span> <span class="pl-en">example</span>(<span class="pl-smi"><span class="pl-smi">cls</span></span>):
+
+        <span class="pl-c"># Configure and start the logger process</span>
+        logger <span class="pl-k">=</span> FancyLogger(<span class="pl-v">permanent_progressbar_slots</span><span class="pl-k">=</span><span class="pl-c1">9</span>)
+
+        <span class="pl-c"># Create a random list of worker processes</span>
+        workers <span class="pl-k">=</span> [WorkerClass(logger) <span class="pl-k">for</span> _ <span class="pl-k">in</span> <span class="pl-c1">range</span>(randrange(<span class="pl-c1">5</span>, <span class="pl-c1">10</span>))]
+
+        logger.info(<span class="pl-s"><span class="pl-pds">'</span>[main] : Start processing things<span class="pl-pds">'</span></span>)
+
+        <span class="pl-c"># Start processes</span>
+        <span class="pl-k">for</span> w <span class="pl-k">in</span> workers:
+            w.start()
+
+        <span class="pl-c"># Wait for processes one by one, using a progress bar iterator for the main thread</span>
+        <span class="pl-k">for</span> w <span class="pl-k">in</span> logger.progress(<span class="pl-v">enumerable</span><span class="pl-k">=</span>workers,
+                                 <span class="pl-v">task_progress_object</span><span class="pl-k">=</span>TaskProgress(<span class="pl-v">total</span><span class="pl-k">=</span><span class="pl-c1">None</span>,  <span class="pl-c"># Total is computed by iterator</span>
+                                                                   <span class="pl-v">prefix</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>Main task<span class="pl-pds">'</span></span>,
+                                                                   <span class="pl-v">keep_alive</span><span class="pl-k">=</span><span class="pl-c1">True</span>)):
+            w.join()
+
+        logger.info(<span class="pl-s"><span class="pl-pds">'</span>[main] : End of processing (<span class="pl-c1">{}</span> objects)<span class="pl-pds">'</span></span>.format(<span class="pl-c1">len</span>(workers)))
+
+        <span class="pl-c"># Display log messages and progress bars as they are right now, to see their last state before exiting</span>
+        <span class="pl-c"># Indeed the logger uses a refresh rate that can be set during initialization. If you do not call flush method</span>
+        <span class="pl-c"># then you might miss the last messages and progress bar states that have not been displayed yet</span>
+        logger.flush()
+        <span class="pl-c"># Stop the logger process</span>
+        logger.terminate()
+
+<span class="pl-k">if</span> <span class="pl-c1">__name__</span> <span class="pl-k">==</span> <span class="pl-s"><span class="pl-pds">'</span>__main__<span class="pl-pds">'</span></span>:
+    App.example()</pre></div>
+
+<h2>
+<a id="in-depth-usage" class="anchor" href="#in-depth-usage" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>In-depth usage</h2>
+
+<p><img src="https://github.com/peepall/FancyLogger/blob/master/example-runtime.gif" alt="example-runtime.gif"></p>
+
+<div class="highlight highlight-source-python"><pre><span class="pl-c">#!/bin/env/python</span>
+<span class="pl-c"># coding: utf-8</span>
+
+<span class="pl-k">import</span> time
+<span class="pl-k">from</span> random <span class="pl-k">import</span> randrange
+
+<span class="pl-k">from</span> FancyLogger <span class="pl-k">import</span> FancyLogger, TaskProgress
+
+
+<span class="pl-k">class</span> <span class="pl-en">App</span>(<span class="pl-c1">object</span>):
+
+    <span class="pl-en">@</span><span class="pl-c1">classmethod</span>
+    <span class="pl-k">def</span> <span class="pl-en">example</span>(<span class="pl-smi"><span class="pl-smi">cls</span></span>):
+
+        <span class="pl-c"># Different configurations for demo</span>
+
+        <span class="pl-c"># logger = FancyLogger(permanent_progressbar_slots=5)</span>
+        <span class="pl-c"># logger = FancyLogger(permanent_progressbar_slots=3,</span>
+        <span class="pl-c">#                      message_number=5,</span>
+        <span class="pl-c">#                      task_seconds_to_removal=1)</span>
+        logger <span class="pl-k">=</span> FancyLogger(<span class="pl-v">message_number</span><span class="pl-k">=</span><span class="pl-c1">15</span>,
+                             <span class="pl-v">task_millis_to_removal</span><span class="pl-k">=</span><span class="pl-c1">0</span>)
+
+        <span class="pl-c"># Define new tasks</span>
+        tasks <span class="pl-k">=</span> [TaskProgress(<span class="pl-v">total</span><span class="pl-k">=</span><span class="pl-c1">150</span>,
+                              <span class="pl-v">prefix</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>Loading<span class="pl-pds">'</span></span>,
+                              <span class="pl-v">suffix</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>Video game!<span class="pl-pds">'</span></span>,
+                              <span class="pl-v">display_time</span><span class="pl-k">=</span><span class="pl-c1">True</span>),
+                 TaskProgress(<span class="pl-v">total</span><span class="pl-k">=</span><span class="pl-c1">80</span>,
+                              <span class="pl-v">prefix</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>You have to be patient please<span class="pl-pds">'</span></span>),
+                 TaskProgress(<span class="pl-v">total</span><span class="pl-k">=</span><span class="pl-c1">120</span>,
+                              <span class="pl-v">prefix</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>This one is permanent<span class="pl-pds">'</span></span>,
+                              <span class="pl-v">suffix</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>and I am still there :)<span class="pl-pds">'</span></span>,
+                              <span class="pl-v">display_time</span><span class="pl-k">=</span><span class="pl-c1">True</span>,
+                              <span class="pl-v">keep_alive</span><span class="pl-k">=</span><span class="pl-c1">True</span>),
+                 TaskProgress(<span class="pl-v">total</span><span class="pl-k">=</span><span class="pl-c1">50</span>,
+                              <span class="pl-v">prefix</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>Almost done !<span class="pl-pds">'</span></span>,
+                              <span class="pl-v">display_time</span><span class="pl-k">=</span><span class="pl-c1">True</span>)
+                 ]
+
+        <span class="pl-c"># Add tasks into the logger</span>
+        <span class="pl-k">for</span> i, t <span class="pl-k">in</span> <span class="pl-c1">enumerate</span>(tasks):
+            logger.set_task_object(<span class="pl-v">task_id</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>task<span class="pl-c1">{}</span><span class="pl-pds">'</span></span>.format(i), <span class="pl-v">task_progress_object</span><span class="pl-k">=</span>t)
+
+        <span class="pl-k">for</span> i <span class="pl-k">in</span> <span class="pl-c1">range</span>(<span class="pl-c1">1</span>, <span class="pl-c1">200</span>):
+
+            random <span class="pl-k">=</span> randrange(<span class="pl-c1">0</span>, <span class="pl-c1">5</span>)
+            <span class="pl-k">if</span> random <span class="pl-k">==</span> <span class="pl-c1">0</span>:
+                logger.info(<span class="pl-s"><span class="pl-pds">'</span>This is an info :)<span class="pl-pds">'</span></span>)
+            <span class="pl-k">elif</span> random <span class="pl-k">==</span> <span class="pl-c1">1</span>:
+                logger.warning(<span class="pl-s"><span class="pl-pds">'</span>You should read this carefully!<span class="pl-pds">'</span></span>)
+            <span class="pl-k">elif</span> random <span class="pl-k">==</span> <span class="pl-c1">2</span>:
+                logger.debug(<span class="pl-s"><span class="pl-pds">'</span>Don<span class="pl-cce">\'</span>t bother read this<span class="pl-pds">'</span></span>)
+            <span class="pl-k">elif</span> random <span class="pl-k">==</span> <span class="pl-c1">3</span>:
+                logger.error(<span class="pl-s"><span class="pl-pds">'</span>Something went wrong :(<span class="pl-pds">'</span></span>)
+            <span class="pl-k">elif</span> random <span class="pl-k">==</span> <span class="pl-c1">4</span>:
+                logger.critical(<span class="pl-s"><span class="pl-pds">'</span>Ouch x_x<span class="pl-pds">'</span></span>)
+
+            random <span class="pl-k">=</span> randrange(<span class="pl-c1">0</span>, <span class="pl-c1">4</span>)
+            <span class="pl-k">if</span> random <span class="pl-k">==</span> <span class="pl-c1">0</span>:
+                logger.update(<span class="pl-v">task_id</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>task0<span class="pl-pds">'</span></span>, <span class="pl-v">progress</span><span class="pl-k">=</span>i)
+            <span class="pl-k">elif</span> random <span class="pl-k">==</span> <span class="pl-c1">1</span>:
+                logger.update(<span class="pl-v">task_id</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>task1<span class="pl-pds">'</span></span>, <span class="pl-v">progress</span><span class="pl-k">=</span>i<span class="pl-k">*</span>random)
+            <span class="pl-k">elif</span> random <span class="pl-k">==</span> <span class="pl-c1">2</span>:
+                logger.update(<span class="pl-v">task_id</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>task2<span class="pl-pds">'</span></span>, <span class="pl-v">progress</span><span class="pl-k">=</span>i<span class="pl-k">*</span>random)
+            <span class="pl-k">elif</span> random <span class="pl-k">==</span> <span class="pl-c1">3</span>:
+                logger.update(<span class="pl-v">task_id</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>task3<span class="pl-pds">'</span></span>, <span class="pl-v">progress</span><span class="pl-k">=</span>i<span class="pl-k">*</span>random)
+
+            <span class="pl-c"># Change settings during execution</span>
+            <span class="pl-k">if</span> i <span class="pl-k">==</span> <span class="pl-c1">50</span>:
+                logger.set_configuration(<span class="pl-v">permanent_progressbar_slots</span><span class="pl-k">=</span><span class="pl-c1">3</span>,
+                                         <span class="pl-v">message_number</span><span class="pl-k">=</span><span class="pl-c1">5</span>)
+
+            time.sleep(<span class="pl-c1">0.15</span>)
+
+        logger.info(<span class="pl-s"><span class="pl-pds">'</span>Bye bye :)<span class="pl-pds">'</span></span>)
+        logger.flush()
+        logger.terminate()
+
+<span class="pl-k">if</span> <span class="pl-c1">__name__</span> <span class="pl-k">==</span> <span class="pl-s"><span class="pl-pds">'</span>__main__<span class="pl-pds">'</span></span>:
+    App.example()</pre></div>
+        </section>
+
+        <footer>
+          Fancylogger is maintained by <a href="https://github.com/peepall">peepall</a><br>
+          This page was generated by <a href="https://pages.github.com">GitHub Pages</a>. Tactile theme by <a href="https://twitter.com/jasonlong">Jason Long</a>.
+        </footer>
+
+        
+      </div>
+    </div>
+  </body>
+</html>
