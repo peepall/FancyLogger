@@ -16,17 +16,19 @@ Fork of [aubricus/print_progress.py](https://gist.github.com/aubricus/f91fb55dc6
  * Python's multiprocessing support
   
  ## Iterator usage
- ![example2-runtime.gif](https://github.com/peepall/FancyLogger/blob/master/example2-runtime.gif)
+ ![example2-runtime.gif](https://github.com/peepall/FancyLogger/blob/master/examples/example2-runtime.gif)
   
 ```python
 #!/bin/env/python
 # coding: utf-8
 
 import os
+import sys
 import time
 from multiprocessing import Process
 from random import randrange
 
+sys.path.append('../')
 from FancyLogger import FancyLogger, TaskProgress
 
 
@@ -99,15 +101,17 @@ if __name__ == '__main__':
 ```  
   
 ## In-depth usage
-![example-runtime.gif](https://github.com/peepall/FancyLogger/blob/master/example-runtime.gif)
+![example-runtime.gif](https://github.com/peepall/FancyLogger/blob/master/examples/example-runtime.gif)
   
 ```python
 #!/bin/env/python
 # coding: utf-8
 
+import sys
 import time
 from random import randrange
 
+sys.path.append('../')
 from FancyLogger import FancyLogger, TaskProgress
 
 
