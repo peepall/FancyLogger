@@ -15,45 +15,58 @@ from ..commands import *
 
 
 def millis():
+    """
+    Gives the current time in milliseconds.
+    :return: The current time in milliseconds.
+    """
     return time.time() * 1000
 
 
 class MultiprocessingLogger(Process):
     """
-    Handle file logging along with cycling message logger and progress bars
+    Core of the multiprocess logger library. Handles message and progress queue from other processes and does all the
+    rendering on the screen. Handles the file logger.
     """
 
-    # Queue meant to receive orders from all processes
     queue = None
-    # The logging.log for files only
+    "Queue to receive orders from all processes."
     log = None
+    "The python logging's logger for files only."
     os_flush_command = 'cls' if os.name == 'nt' else 'clear'
-    # Defines the longest task prefix in order to align progress bars
+    "The clear command on Unix and cls command on Windows."
     longest_bar_prefix_size = 0
+    "Defines the longest task prefix in order to align progress bars to the left."
 
-    # The redraw chrono
-    refresh_chrono = millis()
-    # Indicates if a new message has been posted or if a task has updated. If none, then there is no need to redraw
+    refresh_timer = millis()
+    "The redraw timer."
     changes_made = False
+    "Indicates if a new message has been posted or if a task has updated. If none, then there is no need to redraw."
 
-    # List of tasks identified by an id. One progress bar per task
     tasks = OrderedDict()
-    # When a task is marked for deletion, it is added in this list for next redraw to process it
-    todelete = []
+    "List of tasks identified by an id. One progress bar per task."
+    to_delete = []
+    "When a task is marked for deletion, it is added in this list for next redraw to process it."
 
     # ------------- Customizable parameters
-    # Cycling list of log messages below the progress bars
     messages = None
-    # Defines the vertical space (in bar number) to keep at all times between progress bars section and messages section
+    "Cycling list of log messages below the progress bars."
     permanent_progressbar_slots = None
-    # Defines the minimum time in milliseconds between two redrawings. It may be more because the redraw rate depends
-    # upon chrono AND method calls
+    """
+    Defines the vertical space (in bar slots) to keep at all times between progress bars section and messages
+    section.
+    """
     redraw_frequency_millis = None
-    # Logging level
+    """
+    Defines the minimum time in milliseconds between two redraws. It may be more because the redraw rate depends
+    upon time AND method calls.
+    """
     level = None
-    # Minimum number of seconds at maximum completion before a progress bar is removed from display
-    # The progress bar may vanish at a further time as the redraw rate depends upon chrono AND method calls
+    "The logging level (from standard logging module)."
     task_millis_to_removal = None
+    """
+    Minimum number of milliseconds at maximum completion before a progress bar is removed from display.
+    The progress bar may vanish at a further time as the redraw rate depends upon time AND method calls.
+    """
     # -------------
 
     def __init__(self,
@@ -64,17 +77,20 @@ class MultiprocessingLogger(Process):
                  level,
                  task_millis_to_removal):
         """
-        Defines the logger behavior
-        :param message_number:                  Number of simultaneous messages below the progress bars
-        :param permanent_progressbar_slots:     The amount of vertical space (in bar number) to keep at all times
-                                                between progress bars section and messages section
-        :param redraw_frequency_millis:         Minimum time lapse in milliseconds between two redrawings. It may be
-                                                more because the redraw rate depends upon chrono AND method calls
-        :param level:                           The logging level (from standard logging module)
-        :param task_millis_to_removal:          Minimum number of milliseconds at maximum completion before a progress
-                                                bar is removed from display. The progress bar may vanish at a further
-                                                time as the redraw rate depends upon chrono AND method calls
-        :return:
+        Defines the current configuration of the logger and the queue to receive messages from remote processes. Must be
+        used one time only.
+        :param queue:                       Queue to receive orders from all processes. Must be the same object
+                                            reference as processes that send log messages and progress updates.
+        :param message_number:              Number of simultaneously displayed messages below progress bars.
+        :param permanent_progressbar_slots: The amount of vertical space (bar slots) to keep at all times,
+                                            so the message logger will not move anymore if the bar number is equal or
+                                            lower than this parameter.
+        :param redraw_frequency_millis:     Minimum time lapse in milliseconds between two redraws. It may be
+                                            more because the redraw rate depends upon time AND method calls.
+        :param level:                       The logging level (from standard logging module).
+        :param task_millis_to_removal:      Minimum time lapse in milliseconds at maximum completion before
+                                            a progress bar is removed from display. The progress bar may vanish at a
+                                            further time as the redraw rate depends upon time AND method calls.
         """
         super(MultiprocessingLogger, self).__init__()
 
@@ -87,7 +103,11 @@ class MultiprocessingLogger(Process):
                                                        redraw_frequency_millis=redraw_frequency_millis))
 
     def set_configuration(self, command):
-
+        """
+        Defines the current configuration of the logger. Can be used at any moment during runtime to modify the logger
+        behavior.
+        :param command: The command object that holds all the necessary information from the remote process.
+        """
         self.permanent_progressbar_slots = command.permanent_progressbar_slots
         self.redraw_frequency_millis = command.redraw_frequency_millis
         self.level = command.level
@@ -113,7 +133,10 @@ class MultiprocessingLogger(Process):
             self.messages = command.message_number * ['']
 
     def run(self):
-
+        """
+        The main loop for the logger process. Will receive remote processes orders one by one and wait for the next one.
+        Then return from this method when the main application calls for exit, which is a regular command.
+        """
         # Initialize the logging.log
         self.log = getLogger()
 
@@ -131,23 +154,21 @@ class MultiprocessingLogger(Process):
 
             if isinstance(o, LogMessageCommand):
                 if o.level == logging.DEBUG:
-                    self.debug(text=o.text)
+                    self.debug(command=o)
                 elif o.level == logging.INFO:
-                    self.info(text=o.text)
+                    self.info(command=o)
                 elif o.level == logging.WARNING:
-                    self.warning(text=o.text)
+                    self.warning(command=o)
                 elif o.level == logging.ERROR:
-                    self.error(text=o.text)
+                    self.error(command=o)
                 elif o.level == logging.CRITICAL:
-                    self.critical(text=o.text)
+                    self.critical(command=o)
 
             elif isinstance(o, UpdateProgressCommand):
-                self.update(task_id=o.task_id,
-                            progress=o.progress)
+                self.update(command=o)
 
             elif isinstance(o, NewTaskCommand):
-                self.set_task(task_id=o.task_id,
-                              task=o.task)
+                self.set_task(command=o)
 
             elif isinstance(o, FlushCommand):
                 self.flush()
@@ -159,13 +180,12 @@ class MultiprocessingLogger(Process):
                 return
 
             elif isinstance(o, SetLevelCommand):
-                self.set_level(level=o.level,
-                               console_only=o.console_only)
+                self.set_level(command=o)
 
     def longest_bar_prefix_value(self):
         """
-        Calculates the longest task prefix in order to keep all progress bars left-aligned
-        :return: Length of the longest task prefix (number of chars)
+        Calculates the longest progress bar prefix in order to keep all progress bars left-aligned.
+        :return: Length of the longest task prefix in character unit.
         """
         longest = 0
         for key, t in self.tasks.items():
@@ -178,9 +198,9 @@ class MultiprocessingLogger(Process):
     @staticmethod
     def millis_to_human_readable(time_millis):
         """
-        Calculates the equivalent time of given milliseconds into human readable time
-        :param time_millis: Time in milliseconds using time library
-        :return:            Human readable rime. Example: 2 min 03 s
+        Calculates the equivalent time of the given milliseconds into a human readable string from seconds to weeks.
+        :param time_millis: Time in milliseconds using python time library.
+        :return:            Human readable time string. Example: 2 min 3 s.
         """
         weeks = 0
         days = 0
@@ -221,9 +241,8 @@ class MultiprocessingLogger(Process):
 
     def print_progress_bar(self, task):
         """
-        Draws a progress bar based on given information
-        :param task:    Contains all required information to draw a progress bar at the given state
-        :return:
+        Draws a progress bar on screen based on the given information using standard output (stdout).
+        :param task: TaskProgress object containing all required information to draw a progress bar at the given state.
         """
         str_format = "{0:." + str(task.decimals) + "f}"
         percents = str_format.format(100 * (task.progress / float(task.total)))
@@ -266,18 +285,17 @@ class MultiprocessingLogger(Process):
 
     def redraw(self):
         """
-        Clear the console and perform a complete redraw of progress bars and messages if the minimum time elapsed since
-        the last redraw is enough
-        :return:
+        Clears the console and performs a complete redraw of all progress bars and then awaiting logger messages if the
+        minimum time elapsed since the last redraw is enough.
         """
 
         # Check if the refresh time lapse has elapsed and if a change requires to redraw
-        lapse_since_last_refresh = millis() - self.refresh_chrono
+        lapse_since_last_refresh = millis() - self.refresh_timer
         if not lapse_since_last_refresh > self.redraw_frequency_millis or not self.changes_made:
             return
         # If yes, then reset change indicator and chrono
         self.changes_made = False
-        self.refresh_chrono = millis()
+        self.refresh_timer = millis()
 
         # Clear the system console
         os.system(self.os_flush_command)
@@ -287,10 +305,10 @@ class MultiprocessingLogger(Process):
         # For the other tasks that have not completed yet, redraw them
 
         # Delete tasks that have been marked for deletion
-        if len(self.todelete) > 0:
-            for task_id in self.todelete:
+        if len(self.to_delete) > 0:
+            for task_id in self.to_delete:
                 del self.tasks[task_id]
-            self.todelete = []
+            self.to_delete = []
             # If a task has been deleted, recalculate the maximum prefix length to keep progress bars aligned
             self.longest_bar_prefix_size = self.longest_bar_prefix_value()
 
@@ -307,7 +325,7 @@ class MultiprocessingLogger(Process):
                     task.timeout_chrono = millis()
                 # If task's chrono has reached the maximum timeout time, mark it for deletion
                 elif millis() - task.timeout_chrono >= self.task_millis_to_removal:
-                    self.todelete.append(task_id)
+                    self.to_delete.append(task_id)
 
             # Redraw the task's progress bar
             self.print_progress_bar(task=task)
@@ -329,9 +347,8 @@ class MultiprocessingLogger(Process):
     def append_message(self,
                        message):
         """
-        Append the given message at the end of the message list and delete the oldest one
-        :param message:
-        :return:
+        Appends the given message at the end of the message list and delete the oldest one (top most).
+        :param message: The formatted text to log.
         """
         # Delete the first message of the list
         del self.messages[0]
@@ -345,11 +362,11 @@ class MultiprocessingLogger(Process):
 
     def flush(self):
         """
-        Flushes the remaining messages by forcing redraw. Can be useful if you want to be sure a message or progress has
-        been updated in display, like when you are exiting an application.
-        :return:
+        Flushes the remaining messages and progress bars state by forcing redraw. Can be useful if you want to be sure
+        that a message or progress has been updated in display at a given moment in code, like when you are exiting an
+        application or doing some kind of synchronized operations.
         """
-        self.refresh_chrono = 0
+        self.refresh_timer = 0
         self.changes_made = True
 
         self.redraw()
@@ -357,115 +374,125 @@ class MultiprocessingLogger(Process):
     @staticmethod
     def current_timestamp():
         """
-        Get the current time for log messages
-        :return:
+        Gets the current timestamp.
+        :return: The timestamp string to append to log messages.
         """
         return time.strftime('%d %B %Y %H:%M:%S').lower()
 
-    def set_level(self,
-                  level,
-                  console_only=False):
+    def set_level(self, command):
         """
-        Sets the logging level for log messages
-        :return:
+        Defines the logging level (from standard logging module) for log messages.
+        :param command: The command object that holds all the necessary information from the remote process.
         """
-        if not console_only:
-            self.log.setLevel(level)
+        if not command.console_only:
+            self.log.setLevel(command.level)
 
-        self.level = level
+        self.level = command.level
 
-    def set_task(self,
-                 task_id,
-                 task):
+    def set_task(self, command):
         """
-        Defines a new task with the given information
-        :param task_id:     To be registered in task list
-        :param task:        Task object holding information
-        :return:
+        Defines a new progress bar with the given information.
+        :param command: The command object that holds all the necessary information from the remote process.
         """
-        self.tasks[task_id] = task
+        self.tasks[command.task_id] = command.task
 
         self.longest_bar_prefix_size = self.longest_bar_prefix_value()
 
         self.changes_made = True
 
-    def update(self,
-               task_id,
-               progress):
+    def update(self, command):
         """
-        If the given id exists, update the task's progress and trigger redrawing
-        :param task_id:     Task to update (must be existing)
-        :param progress:    Progress relative to the 'task.total' attribute
-        :return:
+        Defines the current progress for this progress bar id in iteration units (not percent).
+        If the given id does not exist or the given progress is identical to the current, then does nothing.
+        Logger uses a redraw rate because of console flickering. That means it will not draw new messages or progress
+        at the very time they are being logged but their timestamp will be captured at the right time. Logger will
+        redraw at a given time period AND when new messages or progress are logged. If you still want to force redraw
+        immediately (may produce flickering) then call 'flush' method.
+        :param command: The command object that holds all the necessary information from the remote process.
         """
-        if task_id in self.tasks and self.tasks[task_id].set_progress(progress):
+        if command.task_id in self.tasks and self.tasks[command.task_id].set_progress(command.progress):
             self.changes_made = True
 
             # Redraw
             self.redraw()
 
-    def debug(self, text):
+    def debug(self, command):
         """
-        Posts a debug message adding a timestamp and logging level
-        :param text:
-        :return:
+        Posts a debug message adding a timestamp and logging level to it for both file and console handlers.
+        Logger uses a redraw rate because of console flickering. That means it will not draw new messages or progress
+        at the very time they are being logged but their timestamp will be captured at the right time. Logger will
+        redraw at a given time period AND when new messages or progress are logged. If you still want to force redraw
+        immediately (may produce flickering) then call 'flush' method.
+        :param command: The command object that holds all the necessary information from the remote process.
         """
         if self.level == logging.DEBUG:
-            message = '{} [{}]\t{}\n'.format(self.current_timestamp(), 'DEBUG', text)
+            message = '{} [{}]\t{}\n'.format(self.current_timestamp(), 'DEBUG', command.text)
             self.append_message(message)
 
-        self.log.debug('\t{}'.format(text))
+        self.log.debug('\t{}'.format(command.text))
 
-    def info(self, text):
+    def info(self, command):
         """
-        Posts an info message adding a timestamp and logging level
-        :param text:
-        :return:
+        Posts an info message adding a timestamp and logging level to it for both file and console handlers.
+        Logger uses a redraw rate because of console flickering. That means it will not draw new messages or progress
+        at the very time they are being logged but their timestamp will be captured at the right time. Logger will
+        redraw at a given time period AND when new messages or progress are logged. If you still want to force redraw
+        immediately (may produce flickering) then call 'flush' method.
+        :param command: The command object that holds all the necessary information from the remote process.
         """
         if (self.level == logging.DEBUG
                 or self.level == logging.INFO):
 
-            message = '{} [{}]\t{}\n'.format(self.current_timestamp(), 'INFO', text)
+            message = '{} [{}]\t{}\n'.format(self.current_timestamp(), 'INFO', command.text)
             self.append_message(message)
 
-        self.log.info('\t\t{}'.format(text))
+        self.log.info('\t\t{}'.format(command.text))
 
-    def warning(self, text):
+    def warning(self, command):
         """
-        Posts a warning message adding a timestamp and logging level
-        :param text:
-        :return:
+        Posts a warning message adding a timestamp and logging level to it for both file and console handlers.
+        Logger uses a redraw rate because of console flickering. That means it will not draw new messages or progress
+        at the very time they are being logged but their timestamp will be captured at the right time. Logger will
+        redraw at a given time period AND when new messages or progress are logged. If you still want to force redraw
+        immediately (may produce flickering) then call 'flush' method.
+        :param command: The command object that holds all the necessary information from the remote process.
         """
         if (self.level == logging.DEBUG
                 or self.level == logging.INFO
                 or self.level == logging.WARNING):
 
-            message = '{} [{}]\t{}\n'.format(self.current_timestamp(), 'WARNING', text)
+            message = '{} [{}]\t{}\n'.format(self.current_timestamp(), 'WARNING', command.text)
             self.append_message(message)
 
-        self.log.warning('\t{}'.format(text))
+        self.log.warning('\t{}'.format(command.text))
 
-    def error(self, text):
+    def error(self, command):
         """
-        Posts an error message adding a timestamp and logging level
-        :param text:
-        :return:
+        Posts an error message adding a timestamp and logging level to it for both file and console handlers.
+        Logger uses a redraw rate because of console flickering. That means it will not draw new messages or progress
+        at the very time they are being logged but their timestamp will be captured at the right time. Logger will
+        redraw at a given time period AND when new messages or progress are logged. If you still want to force redraw
+        immediately (may produce flickering) then call 'flush' method.
+        :param command: The command object that holds all the necessary information from the remote process.
         """
         if (self.level == logging.DEBUG
                 or self.level == logging.INFO
                 or self.level == logging.WARNING
                 or self.level == logging.ERROR):
 
-            message = '{} [{}]\t{}\n'.format(self.current_timestamp(), 'ERROR', text)
+            message = '{} [{}]\t{}\n'.format(self.current_timestamp(), 'ERROR', command.text)
             self.append_message(message)
 
-        self.log.error('\t{}'.format(text))
+        self.log.error('\t{}'.format(command.text))
 
-    def critical(self, text):
+    def critical(self, command):
         """
-        Posts a critical message adding a timestamp and logging level
-        :param text:
-        :return:
+        Posts a critical message adding a timestamp and logging level to it for both file and console handlers.
+        Logger uses a redraw rate because of console flickering. That means it will not draw new messages or progress
+        at the very time they are being logged but their timestamp will be captured at the right time. Logger will
+        redraw at a given time period AND when new messages or progress are logged. If you still want to force redraw
+        immediately (may produce flickering) then call 'flush' method.
+        :param command: The command object that holds all the necessary information from the remote process.
         """
         if (self.level == logging.DEBUG
                 or self.level == logging.INFO
@@ -473,7 +500,7 @@ class MultiprocessingLogger(Process):
                 or self.level == logging.ERROR
                 or self.level == logging.CRITICAL):
 
-            message = '{} [{}]\t{}\n'.format(self.current_timestamp(), 'CRITICAL', text)
+            message = '{} [{}]\t{}\n'.format(self.current_timestamp(), 'CRITICAL', command.text)
             self.append_message(message)
 
-        self.log.critical('\t{}'.format(text))
+        self.log.critical('\t{}'.format(command.text))

@@ -13,7 +13,8 @@ from .processing import MultiprocessingLogger
 
 class TaskProgress(object):
     """
-    Holds both data and graphics-related information for a task's progress bar
+    Holds both data and graphics-related information for a task's progress bar.
+    The logger will iterate over TaskProgress objects to draw progress bars on screen.
     """
 
     def __init__(self,
@@ -24,6 +25,20 @@ class TaskProgress(object):
                  bar_length=60,
                  keep_alive=False,
                  display_time=False):
+        """
+        Creates a new progress bar using the given information.
+        :param total:           The total number of iteration for this progress bar.
+        :param prefix:          [Optional] The text that should be displayed at the left side of the progress bar. Note
+                                that progress bars will always stay left-aligned at the shortest possible.
+        :param suffix:          [Optional] The text that should be displayed at the very right side of the progress bar.
+        :param decimals:        [Optional] The number of decimals to display for the percentage.
+        :param bar_length:      [Optional] The graphical bar size displayed on screen. Unit is character.
+        :param keep_alive:      [Optional] Specify whether the progress bar should stay displayed forever once completed
+                                or if it should vanish.
+        :param display_time:    [Optional] Specify whether the duration since the progress has begun should be
+                                displayed. Running time will be displayed between parenthesis, whereas it will be
+                                displayed between brackets when the progress has completed.
+        """
         super(TaskProgress, self).__init__()
 
         self.progress = 0
@@ -47,13 +62,16 @@ class TaskProgress(object):
 
     def set_progress(self, progress):
         """
-
-        :param progress:
-        :return:
+        Defines the current progress for this progress bar in iteration units (not percent).
+        :param progress:    Current progress in iteration units regarding its total (not percent).
+        :return:            True if the progress has changed. If the given progress is higher than the total or lower
+                            than 0 then it will be ignored.
         """
         _progress = progress
         if _progress > self.total:
             _progress = self.total
+        elif _progress < 0:
+            _progress = 0
 
         # Stop task chrono if needed
         if _progress == self.total and self.display_time:
@@ -68,14 +86,27 @@ class TaskProgress(object):
 
 
 class FancyLogger(object):
+    """
+    Defines a multiprocess logger object. Logger uses a redraw rate because of console flickering. That means it will
+    not draw new messages or progress at the very time they are being logged but their timestamp will be captured at the
+    right time. Logger will redraw at a given time period AND when new messages or progress are logged.
+    If you still want to force redraw immediately (may produce flickering) then call 'flush' method.
+    Logger uses one file handler and then uses standard output (stdout) to draw on screen.
+    """
 
     queue = None
+    "Handles all messages and progress to be sent to the logger process."
 
     default_message_number = 20
+    "Default value for the logger configuration."
     default_permanent_progressbar_slots = 0
+    "Default value for the logger configuration."
     default_redraw_frequency_millis = 500
+    "Default value for the logger configuration."
     default_level = logging.INFO
+    "Default value for the logger configuration."
     default_task_millis_to_removal = 500
+    "Default value for the logger configuration."
 
     def __init__(self,
                  message_number=default_message_number,
@@ -84,17 +115,17 @@ class FancyLogger(object):
                  level=default_level,
                  task_millis_to_removal=default_task_millis_to_removal):
         """
-        Defines the logger behavior
-        :param message_number:                  Number of simultaneous messages below the progress bars
-        :param permanent_progressbar_slots:     The amount of vertical space (in bar number) to keep at all times
-                                                between progress bars section and messages section
-        :param redraw_frequency_millis:         Minimum time lapse in milliseconds between two redrawings. It may be
-                                                more because the redraw rate depends upon chrono AND method calls
-        :param level:                           The logging level (from standard logging module)
-        :param task_millis_to_removal:          Minimum number of milliseconds at maximum completion before a progress
-                                                bar is removed from display. The progress bar may vanish at a further
-                                                time as the redraw rate depends upon chrono AND method calls
-        :return:
+        Initializes a new logger and starts its process immediately using given configuration.
+        :param message_number:              [Optional] Number of simultaneously displayed messages below progress bars.
+        :param permanent_progressbar_slots: [Optional] The amount of vertical space (bar slots) to keep at all times,
+                                            so the message logger will not move anymore if the bar number is equal or
+                                            lower than this parameter.
+        :param redraw_frequency_millis:     [Optional] Minimum time lapse in milliseconds between two redraws. It may be
+                                            more because the redraw rate depends upon time AND method calls.
+        :param level:                       [Optional] The logging level (from standard logging module).
+        :param task_millis_to_removal:      [Optional] Minimum time lapse in milliseconds at maximum completion before
+                                            a progress bar is removed from display. The progress bar may vanish at a
+                                            further time as the redraw rate depends upon time AND method calls.
         """
         super(FancyLogger, self).__init__()
 
@@ -110,16 +141,16 @@ class FancyLogger(object):
 
     def flush(self):
         """
-        Flushes the remaining messages by forcing redraw. Can be useful if you want to be sure a message or progress has
-        been updated in display, like when you are exiting an application.
-        :return:
+        Flushes the remaining messages and progress bars state by forcing redraw. Can be useful if you want to be sure
+        that a message or progress has been updated in display at a given moment in code, like when you are exiting an
+        application or doing some kind of synchronized operations.
         """
         self.queue.put(dill.dumps(FlushCommand()))
 
     def terminate(self):
         """
-        Tells the logger process to exit.
-        :return:
+        Tells the logger process to exit immediately. If you do not call 'flush' method before, you may lose some
+        messages of progresses that have not been displayed yet. This method blocks until logger process has stopped.
         """
         self.queue.put(dill.dumps(ExitCommand()))
 
@@ -132,6 +163,20 @@ class FancyLogger(object):
                           redraw_frequency_millis=default_redraw_frequency_millis,
                           level=default_level,
                           task_millis_to_removal=default_task_millis_to_removal):
+        """
+        Defines the current configuration of the logger. Can be used at any moment during runtime to modify the logger
+        behavior.
+        :param message_number:              [Optional] Number of simultaneously displayed messages below progress bars.
+        :param permanent_progressbar_slots: [Optional] The amount of vertical space (bar slots) to keep at all times,
+                                            so the message logger will not move anymore if the bar number is equal or
+                                            lower than this parameter.
+        :param redraw_frequency_millis:     [Optional] Minimum time lapse in milliseconds between two redraws. It may be
+                                            more because the redraw rate depends upon time AND method calls.
+        :param level:                       [Optional] The logging level (from standard logging module).
+        :param task_millis_to_removal:      [Optional] Minimum time lapse in milliseconds at maximum completion before
+                                            a progress bar is removed from display. The progress bar may vanish at a
+                                            further time as the redraw rate depends upon time AND method calls.
+        """
         self.queue.put(dill.dumps(SetConfigurationCommand(task_millis_to_removal=task_millis_to_removal,
                                                           level=level,
                                                           permanent_progressbar_slots=permanent_progressbar_slots,
@@ -142,8 +187,9 @@ class FancyLogger(object):
                   level,
                   console_only=False):
         """
-        Sets the logging level for log messages
-        :return:
+        Defines the logging level (from standard logging module) for log messages.
+        :param level:           Level of logging for the file logger.
+        :param console_only:    [Optional] If True then the file logger will not be affected.
         """
         self.queue.put(dill.dumps(SetLevelCommand(level=level,
                                                   console_only=console_only)))
@@ -152,10 +198,9 @@ class FancyLogger(object):
                         task_id,
                         task_progress_object):
         """
-        Defines a new task with the given information using a TaskProgress object
-        :param task_id:                 To be registered in task list
-        :param task_progress_object:    Total number of iterations before completed
-        :return:
+        Defines a new progress bar with the given information using a TaskProgress object.
+        :param task_id:                 Unique identifier for this progress bar. Will erase if already existing.
+        :param task_progress_object:    TaskProgress object holding the progress bar information.
         """
         self.set_task(task_id=task_id,
                       total=task_progress_object.total,
@@ -176,16 +221,19 @@ class FancyLogger(object):
                  keep_alive=False,
                  display_time=False):
         """
-        Defines a new task with the given information
-        :param task_id:     To be registered in task list
-        :param total:       Total number of iterations before completed
-        :param prefix:      Title to display before progress bar
-        :param suffix:      Title to display after percentage
-        :param decimals:    Number of decimals for percentage
-        :param bar_length:  Bar length on screen (in chars)
-        :param keep_alive:        Defines if the progress bar should stay display even when completed
-        :param display_time:      Display the elapsed time in human readable format after the suffix
-        :return:
+        Defines a new progress bar with the given information.
+        :param task_id:         Unique identifier for this progress bar. Will erase if already existing.
+        :param total:           The total number of iteration for this progress bar.
+        :param prefix:          The text that should be displayed at the left side of the progress bar. Note that
+                                progress bars will always stay left-aligned at the shortest possible.
+        :param suffix:          [Optional] The text that should be displayed at the very right side of the progress bar.
+        :param decimals:        [Optional] The number of decimals to display for the percentage.
+        :param bar_length:      [Optional] The graphical bar size displayed on screen. Unit is character.
+        :param keep_alive:      [Optional] Specify whether the progress bar should stay displayed forever once completed
+                                or if it should vanish.
+        :param display_time:    [Optional] Specify whether the duration since the progress has begun should be
+                                displayed. Running time will be displayed between parenthesis, whereas it will be
+                                displayed between brackets when the progress has completed.
         """
         self.queue.put(dill.dumps(NewTaskCommand(task_id=task_id,
                                                  task=TaskProgress(total,
@@ -200,58 +248,84 @@ class FancyLogger(object):
                task_id,
                progress):
         """
-        If the given id exists, update the task's progress and trigger redrawing
-        :param task_id:     Task to update (must be existing)
-        :param progress:    Progress relative to the 'task.total' attribute
-        :return:
+        Defines the current progress for this progress bar id in iteration units (not percent).
+        If the given id does not exist or the given progress is identical to the current, then does nothing.
+        Logger uses a redraw rate because of console flickering. That means it will not draw new messages or progress
+        at the very time they are being logged but their timestamp will be captured at the right time. Logger will
+        redraw at a given time period AND when new messages or progress are logged. If you still want to force redraw
+        immediately (may produce flickering) then call 'flush' method.
+        :param task_id:     Unique identifier for this progress bar. Will erase if already existing.
+        :param progress:    Current progress in iteration units regarding its total (not percent).
         """
         self.queue.put(dill.dumps(UpdateProgressCommand(task_id=task_id,
                                                         progress=progress)))
 
     def debug(self, text):
         """
-        Posts a debug message adding a timestamp and logging level
-        :param text:
-        :return:
+        Posts a debug message adding a timestamp and logging level to it for both file and console handlers.
+        Logger uses a redraw rate because of console flickering. That means it will not draw new messages or progress
+        at the very time they are being logged but their timestamp will be captured at the right time. Logger will
+        redraw at a given time period AND when new messages or progress are logged. If you still want to force redraw
+        immediately (may produce flickering) then call 'flush' method.
+        :param text: The text to log into file and console.
         """
         self.queue.put(dill.dumps(LogMessageCommand(text=text, level=logging.DEBUG)))
 
     def info(self, text):
         """
-        Posts an info message adding a timestamp and logging level
-        :param text:
-        :return:
+        Posts an info message adding a timestamp and logging level to it for both file and console handlers.
+        Logger uses a redraw rate because of console flickering. That means it will not draw new messages or progress
+        at the very time they are being logged but their timestamp will be captured at the right time. Logger will
+        redraw at a given time period AND when new messages or progress are logged. If you still want to force redraw
+        immediately (may produce flickering) then call 'flush' method.
+        :param text: The text to log into file and console.
         """
         self.queue.put(dill.dumps(LogMessageCommand(text=text, level=logging.INFO)))
 
     def warning(self, text):
         """
-        Posts a warning message adding a timestamp and logging level
-        :param text:
-        :return:
+        Posts a warning message adding a timestamp and logging level to it for both file and console handlers.
+        Logger uses a redraw rate because of console flickering. That means it will not draw new messages or progress
+        at the very time they are being logged but their timestamp will be captured at the right time. Logger will
+        redraw at a given time period AND when new messages or progress are logged. If you still want to force redraw
+        immediately (may produce flickering) then call 'flush' method.
+        :param text: The text to log into file and console.
         """
         self.queue.put(dill.dumps(LogMessageCommand(text=text, level=logging.WARNING)))
 
     def error(self, text):
         """
-        Posts an error message adding a timestamp and logging level
-        :param text:
-        :return:
+        Posts an error message adding a timestamp and logging level to it for both file and console handlers.
+        Logger uses a redraw rate because of console flickering. That means it will not draw new messages or progress
+        at the very time they are being logged but their timestamp will be captured at the right time. Logger will
+        redraw at a given time period AND when new messages or progress are logged. If you still want to force redraw
+        immediately (may produce flickering) then call 'flush' method.
+        :param text: The text to log into file and console.
         """
         self.queue.put(dill.dumps(LogMessageCommand(text=text, level=logging.ERROR)))
 
     def critical(self, text):
         """
-        Posts a critical message adding a timestamp and logging level
-        :param text:
-        :return:
+        Posts a critical message adding a timestamp and logging level to it for both file and console handlers.
+        Logger uses a redraw rate because of console flickering. That means it will not draw new messages or progress
+        at the very time they are being logged but their timestamp will be captured at the right time. Logger will
+        redraw at a given time period AND when new messages or progress are logged. If you still want to force redraw
+        immediately (may produce flickering) then call 'flush' method.
+        :param text: The text to log into file and console.
         """
         self.queue.put(dill.dumps(LogMessageCommand(text=text, level=logging.CRITICAL)))
 
     # --------------------------------------------------------------------
     # Iterator implementation
-    def progress(self, enumerable, task_progress_object=None):
-
+    def progress(self,
+                 enumerable,
+                 task_progress_object=None):
+        """
+        Enables the object to be used as an iterator. Each iteration will produce a progress update in the logger.
+        :param enumerable:              Collection to iterate over.
+        :param task_progress_object:    [Optional] TaskProgress object holding the progress bar information.
+        :return:                        The logger instance.
+        """
         self.list = enumerable
         self.list_length = len(enumerable)
         self.task_id = uuid.uuid4()
@@ -272,9 +346,17 @@ class FancyLogger(object):
         return self
 
     def __iter__(self):
+        """
+        Enables the object to be used as an iterator. Each iteration will produce a progress update in the logger.
+        :return: The logger instance.
+        """
         return self
 
     def __next__(self):
+        """
+        Enables the object to be used as an iterator. Each iteration will produce a progress update in the logger.
+        :return: The current object of the iterator.
+        """
         if self.index >= self.list_length:
             raise StopIteration
         else:
