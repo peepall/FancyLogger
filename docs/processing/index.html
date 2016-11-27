@@ -1,0 +1,3211 @@
+<!doctype html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+
+    <title>FancyLogger.processing API documentation</title>
+    <meta name="description" content="" />
+
+  <link href='http://fonts.googleapis.com/css?family=Source+Sans+Pro:400,300' rel='stylesheet' type='text/css'>
+  
+  <style type="text/css">
+  
+* {
+  box-sizing: border-box;
+}
+/*! normalize.css v1.1.1 | MIT License | git.io/normalize */
+
+/* ==========================================================================
+   HTML5 display definitions
+   ========================================================================== */
+
+/**
+ * Correct `block` display not defined in IE 6/7/8/9 and Firefox 3.
+ */
+
+article,
+aside,
+details,
+figcaption,
+figure,
+footer,
+header,
+hgroup,
+main,
+nav,
+section,
+summary {
+    display: block;
+}
+
+/**
+ * Correct `inline-block` display not defined in IE 6/7/8/9 and Firefox 3.
+ */
+
+audio,
+canvas,
+video {
+    display: inline-block;
+    *display: inline;
+    *zoom: 1;
+}
+
+/**
+ * Prevent modern browsers from displaying `audio` without controls.
+ * Remove excess height in iOS 5 devices.
+ */
+
+audio:not([controls]) {
+    display: none;
+    height: 0;
+}
+
+/**
+ * Address styling not present in IE 7/8/9, Firefox 3, and Safari 4.
+ * Known issue: no IE 6 support.
+ */
+
+[hidden] {
+    display: none;
+}
+
+/* ==========================================================================
+   Base
+   ========================================================================== */
+
+/**
+ * 1. Prevent system color scheme's background color being used in Firefox, IE,
+ *    and Opera.
+ * 2. Prevent system color scheme's text color being used in Firefox, IE, and
+ *    Opera.
+ * 3. Correct text resizing oddly in IE 6/7 when body `font-size` is set using
+ *    `em` units.
+ * 4. Prevent iOS text size adjust after orientation change, without disabling
+ *    user zoom.
+ */
+
+html {
+    background: #fff; /* 1 */
+    color: #000; /* 2 */
+    font-size: 100%; /* 3 */
+    -webkit-text-size-adjust: 100%; /* 4 */
+    -ms-text-size-adjust: 100%; /* 4 */
+}
+
+/**
+ * Address `font-family` inconsistency between `textarea` and other form
+ * elements.
+ */
+
+html,
+button,
+input,
+select,
+textarea {
+    font-family: sans-serif;
+}
+
+/**
+ * Address margins handled incorrectly in IE 6/7.
+ */
+
+body {
+    margin: 0;
+}
+
+/* ==========================================================================
+   Links
+   ========================================================================== */
+
+/**
+ * Address `outline` inconsistency between Chrome and other browsers.
+ */
+
+a:focus {
+    outline: thin dotted;
+}
+
+/**
+ * Improve readability when focused and also mouse hovered in all browsers.
+ */
+
+a:active,
+a:hover {
+    outline: 0;
+}
+
+/* ==========================================================================
+   Typography
+   ========================================================================== */
+
+/**
+ * Address font sizes and margins set differently in IE 6/7.
+ * Address font sizes within `section` and `article` in Firefox 4+, Safari 5,
+ * and Chrome.
+ */
+
+h1 {
+    font-size: 2em;
+    margin: 0.67em 0;
+}
+
+h2 {
+    font-size: 1.5em;
+    margin: 0.83em 0;
+}
+
+h3 {
+    font-size: 1.17em;
+    margin: 1em 0;
+}
+
+h4 {
+    font-size: 1em;
+    margin: 1.33em 0;
+}
+
+h5 {
+    font-size: 0.83em;
+    margin: 1.67em 0;
+}
+
+h6 {
+    font-size: 0.67em;
+    margin: 2.33em 0;
+}
+
+/**
+ * Address styling not present in IE 7/8/9, Safari 5, and Chrome.
+ */
+
+abbr[title] {
+    border-bottom: 1px dotted;
+}
+
+/**
+ * Address style set to `bolder` in Firefox 3+, Safari 4/5, and Chrome.
+ */
+
+b,
+strong {
+    font-weight: bold;
+}
+
+blockquote {
+    margin: 1em 40px;
+}
+
+/**
+ * Address styling not present in Safari 5 and Chrome.
+ */
+
+dfn {
+    font-style: italic;
+}
+
+/**
+ * Address differences between Firefox and other browsers.
+ * Known issue: no IE 6/7 normalization.
+ */
+
+hr {
+    -moz-box-sizing: content-box;
+    box-sizing: content-box;
+    height: 0;
+}
+
+/**
+ * Address styling not present in IE 6/7/8/9.
+ */
+
+mark {
+    background: #ff0;
+    color: #000;
+}
+
+/**
+ * Address margins set differently in IE 6/7.
+ */
+
+p,
+pre {
+    margin: 1em 0;
+}
+
+/**
+ * Correct font family set oddly in IE 6, Safari 4/5, and Chrome.
+ */
+
+code,
+kbd,
+pre,
+samp {
+    font-family: monospace, serif;
+    _font-family: 'courier new', monospace;
+    font-size: 1em;
+}
+
+/**
+ * Improve readability of pre-formatted text in all browsers.
+ */
+
+pre {
+    white-space: pre;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
+/**
+ * Address CSS quotes not supported in IE 6/7.
+ */
+
+q {
+    quotes: none;
+}
+
+/**
+ * Address `quotes` property not supported in Safari 4.
+ */
+
+q:before,
+q:after {
+    content: '';
+    content: none;
+}
+
+/**
+ * Address inconsistent and variable font size in all browsers.
+ */
+
+small {
+    font-size: 80%;
+}
+
+/**
+ * Prevent `sub` and `sup` affecting `line-height` in all browsers.
+ */
+
+sub,
+sup {
+    font-size: 75%;
+    line-height: 0;
+    position: relative;
+    vertical-align: baseline;
+}
+
+sup {
+    top: -0.5em;
+}
+
+sub {
+    bottom: -0.25em;
+}
+
+/* ==========================================================================
+   Lists
+   ========================================================================== */
+
+/**
+ * Address margins set differently in IE 6/7.
+ */
+
+dl,
+menu,
+ol,
+ul {
+    margin: 1em 0;
+}
+
+dd {
+    margin: 0 0 0 40px;
+}
+
+/**
+ * Address paddings set differently in IE 6/7.
+ */
+
+menu,
+ol,
+ul {
+    padding: 0 0 0 40px;
+}
+
+/**
+ * Correct list images handled incorrectly in IE 7.
+ */
+
+nav ul,
+nav ol {
+    list-style: none;
+    list-style-image: none;
+}
+
+/* ==========================================================================
+   Embedded content
+   ========================================================================== */
+
+/**
+ * 1. Remove border when inside `a` element in IE 6/7/8/9 and Firefox 3.
+ * 2. Improve image quality when scaled in IE 7.
+ */
+
+img {
+    border: 0; /* 1 */
+    -ms-interpolation-mode: bicubic; /* 2 */
+}
+
+/**
+ * Correct overflow displayed oddly in IE 9.
+ */
+
+svg:not(:root) {
+    overflow: hidden;
+}
+
+/* ==========================================================================
+   Figures
+   ========================================================================== */
+
+/**
+ * Address margin not present in IE 6/7/8/9, Safari 5, and Opera 11.
+ */
+
+figure {
+    margin: 0;
+}
+
+/* ==========================================================================
+   Forms
+   ========================================================================== */
+
+/**
+ * Correct margin displayed oddly in IE 6/7.
+ */
+
+form {
+    margin: 0;
+}
+
+/**
+ * Define consistent border, margin, and padding.
+ */
+
+fieldset {
+    border: 1px solid #c0c0c0;
+    margin: 0 2px;
+    padding: 0.35em 0.625em 0.75em;
+}
+
+/**
+ * 1. Correct color not being inherited in IE 6/7/8/9.
+ * 2. Correct text not wrapping in Firefox 3.
+ * 3. Correct alignment displayed oddly in IE 6/7.
+ */
+
+legend {
+    border: 0; /* 1 */
+    padding: 0;
+    white-space: normal; /* 2 */
+    *margin-left: -7px; /* 3 */
+}
+
+/**
+ * 1. Correct font size not being inherited in all browsers.
+ * 2. Address margins set differently in IE 6/7, Firefox 3+, Safari 5,
+ *    and Chrome.
+ * 3. Improve appearance and consistency in all browsers.
+ */
+
+button,
+input,
+select,
+textarea {
+    font-size: 100%; /* 1 */
+    margin: 0; /* 2 */
+    vertical-align: baseline; /* 3 */
+    *vertical-align: middle; /* 3 */
+}
+
+/**
+ * Address Firefox 3+ setting `line-height` on `input` using `!important` in
+ * the UA stylesheet.
+ */
+
+button,
+input {
+    line-height: normal;
+}
+
+/**
+ * Address inconsistent `text-transform` inheritance for `button` and `select`.
+ * All other form control elements do not inherit `text-transform` values.
+ * Correct `button` style inheritance in Chrome, Safari 5+, and IE 6+.
+ * Correct `select` style inheritance in Firefox 4+ and Opera.
+ */
+
+button,
+select {
+    text-transform: none;
+}
+
+/**
+ * 1. Avoid the WebKit bug in Android 4.0.* where (2) destroys native `audio`
+ *    and `video` controls.
+ * 2. Correct inability to style clickable `input` types in iOS.
+ * 3. Improve usability and consistency of cursor style between image-type
+ *    `input` and others.
+ * 4. Remove inner spacing in IE 7 without affecting normal text inputs.
+ *    Known issue: inner spacing remains in IE 6.
+ */
+
+button,
+html input[type="button"], /* 1 */
+input[type="reset"],
+input[type="submit"] {
+    -webkit-appearance: button; /* 2 */
+    cursor: pointer; /* 3 */
+    *overflow: visible;  /* 4 */
+}
+
+/**
+ * Re-set default cursor for disabled elements.
+ */
+
+button[disabled],
+html input[disabled] {
+    cursor: default;
+}
+
+/**
+ * 1. Address box sizing set to content-box in IE 8/9.
+ * 2. Remove excess padding in IE 8/9.
+ * 3. Remove excess padding in IE 7.
+ *    Known issue: excess padding remains in IE 6.
+ */
+
+input[type="checkbox"],
+input[type="radio"] {
+    box-sizing: border-box; /* 1 */
+    padding: 0; /* 2 */
+    *height: 13px; /* 3 */
+    *width: 13px; /* 3 */
+}
+
+/**
+ * 1. Address `appearance` set to `searchfield` in Safari 5 and Chrome.
+ * 2. Address `box-sizing` set to `border-box` in Safari 5 and Chrome
+ *    (include `-moz` to future-proof).
+ */
+
+input[type="search"] {
+    -webkit-appearance: textfield; /* 1 */
+    -moz-box-sizing: content-box;
+    -webkit-box-sizing: content-box; /* 2 */
+    box-sizing: content-box;
+}
+
+/**
+ * Remove inner padding and search cancel button in Safari 5 and Chrome
+ * on OS X.
+ */
+
+input[type="search"]::-webkit-search-cancel-button,
+input[type="search"]::-webkit-search-decoration {
+    -webkit-appearance: none;
+}
+
+/**
+ * Remove inner padding and border in Firefox 3+.
+ */
+
+button::-moz-focus-inner,
+input::-moz-focus-inner {
+    border: 0;
+    padding: 0;
+}
+
+/**
+ * 1. Remove default vertical scrollbar in IE 6/7/8/9.
+ * 2. Improve readability and alignment in all browsers.
+ */
+
+textarea {
+    overflow: auto; /* 1 */
+    vertical-align: top; /* 2 */
+}
+
+/* ==========================================================================
+   Tables
+   ========================================================================== */
+
+/**
+ * Remove most spacing between table cells.
+ */
+
+table {
+    border-collapse: collapse;
+    border-spacing: 0;
+}
+
+  </style>
+
+  <style type="text/css">
+  
+  html, body {
+    margin: 0;
+    padding: 0;
+    min-height: 100%;
+  }
+  body {
+    background: #fff;
+    font-family: "Source Sans Pro", "Helvetica Neueue", Helvetica, sans;
+    font-weight: 300;
+    font-size: 16px;
+    line-height: 1.6em;
+  }
+  #content {
+    width: 70%;
+    max-width: 850px;
+    float: left;
+    padding: 30px 60px;
+    border-left: 1px solid #ddd;
+  }
+  #sidebar {
+    width: 25%;
+    float: left;
+    padding: 30px;
+    overflow: hidden;
+  }
+  #nav {
+    font-size: 130%;
+    margin: 0 0 15px 0;
+  }
+
+  #top {
+    display: block;
+    position: fixed;
+    bottom: 5px;
+    left: 5px;
+    font-size: .85em;
+    text-transform: uppercase;
+  }
+
+  #footer {
+    font-size: .75em;
+    padding: 5px 30px;
+    border-top: 1px solid #ddd;
+    text-align: right;
+  }
+    #footer p {
+      margin: 0 0 0 30px;
+      display: inline-block;
+    }
+
+  h1, h2, h3, h4, h5 {
+    font-weight: 300;
+  }
+  h1 {
+    font-size: 2.5em;
+    line-height: 1.1em;
+    margin: 0 0 .50em 0;
+  }
+
+  h2 {
+    font-size: 1.75em;
+    margin: 1em 0 .50em 0;
+  }
+
+  h3 {
+    margin: 25px 0 10px 0;
+  }
+
+  h4 {
+    margin: 0;
+    font-size: 105%;
+  }
+
+  a {
+    color: #058;
+    text-decoration: none;
+    transition: color .3s ease-in-out;
+  }
+
+  a:hover {
+    color: #e08524;
+    transition: color .3s ease-in-out;
+  }
+
+  pre, code, .mono, .name {
+    font-family: "Ubuntu Mono", "Cousine", "DejaVu Sans Mono", monospace;
+  }
+
+  .title .name {
+    font-weight: bold;
+  }
+  .section-title {
+    margin-top: 2em;
+  }
+  .ident {
+    color: #900;
+  }
+
+  code {
+    background: #f9f9f9;
+  } 
+
+  pre {
+    background: #fefefe;
+    border: 1px solid #ddd;
+    box-shadow: 2px 2px 0 #f3f3f3;
+    margin: 0 30px;
+    padding: 15px 30px;
+  }
+
+  .codehilite {
+    margin: 0 30px 10px 30px;
+  }
+
+    .codehilite pre {
+      margin: 0;
+    }
+    .codehilite .err { background: #ff3300; color: #fff !important; } 
+
+  table#module-list {
+    font-size: 110%;
+  }
+
+    table#module-list tr td:first-child {
+      padding-right: 10px;
+      white-space: nowrap;
+    }
+
+    table#module-list td {
+      vertical-align: top;
+      padding-bottom: 8px;
+    }
+
+      table#module-list td p {
+        margin: 0 0 7px 0;
+      }
+
+  .def {
+    display: table;
+  }
+
+    .def p {
+      display: table-cell;
+      vertical-align: top;
+      text-align: left;
+    }
+
+    .def p:first-child {
+      white-space: nowrap;
+    }
+
+    .def p:last-child {
+      width: 100%;
+    }
+
+
+  #index {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+  }
+    ul#index .class_name {
+      /* font-size: 110%; */
+      font-weight: bold;
+    }
+    #index ul {
+      margin: 0;
+    }
+
+  .item {
+    margin: 0 0 15px 0;
+  }
+
+    .item .class {
+      margin: 0 0 25px 30px;
+    }
+
+      .item .class ul.class_list {
+        margin: 0 0 20px 0;
+      }
+
+    .item .name {
+      background: #fafafa;
+      margin: 0;
+      font-weight: bold;
+      padding: 5px 10px;
+      border-radius: 3px;
+      display: inline-block;
+      min-width: 40%;
+    }
+      .item .name:hover {
+        background: #f6f6f6;
+      }
+
+    .item .empty_desc {
+      margin: 0 0 5px 0;
+      padding: 0;
+    }
+
+    .item .inheritance {
+      margin: 3px 0 0 30px;
+    }
+
+    .item .inherited {
+      color: #666;
+    }
+
+    .item .desc {
+      padding: 0 8px;
+      margin: 0;
+    }
+
+      .item .desc p {
+        margin: 0 0 10px 0;
+      }
+
+    .source_cont {
+      margin: 0;
+      padding: 0;
+    }
+
+    .source_link a {
+      background: #ffc300;
+      font-weight: 400;
+      font-size: .75em;
+      text-transform: uppercase;
+      color: #fff;
+      text-shadow: 1px 1px 0 #f4b700;
+      
+      padding: 3px 8px;
+      border-radius: 2px;
+      transition: background .3s ease-in-out;
+    }
+      .source_link a:hover {
+        background: #FF7200;
+        text-shadow: none;
+        transition: background .3s ease-in-out;
+      }
+
+    .source {
+      display: none;
+      max-height: 600px;
+      overflow-y: scroll;
+      margin-bottom: 15px;
+    }
+
+      .source .codehilite {
+        margin: 0;
+      }
+
+  .desc h1, .desc h2, .desc h3 {
+    font-size: 100% !important;
+  }
+  .clear {
+    clear: both;
+  }
+
+  @media all and (max-width: 950px) {
+    #sidebar {
+      width: 35%;
+    }
+    #content {
+      width: 65%;
+    }
+  }
+  @media all and (max-width: 650px) {
+    #top {
+      display: none;
+    }
+    #sidebar {
+      float: none;
+      width: auto;
+    }
+    #content {
+      float: none;
+      width: auto;
+      padding: 30px;
+    }
+
+    #index ul {
+      padding: 0;
+      margin-bottom: 15px;
+    }
+    #index ul li {
+      display: inline-block;
+      margin-right: 30px;
+    }
+    #footer {
+      text-align: left;
+    }
+    #footer p {
+      display: block;
+      margin: inherit;
+    }
+  }
+
+  /*****************************/
+
+  </style>
+
+
+  <style type="text/css">
+  
+/* ==========================================================================
+   EXAMPLE Media Queries for Responsive Design.
+   These examples override the primary ('mobile first') styles.
+   Modify as content requires.
+   ========================================================================== */
+
+@media only screen and (min-width: 35em) {
+    /* Style adjustments for viewports that meet the condition */
+}
+
+@media print,
+       (-o-min-device-pixel-ratio: 5/4),
+       (-webkit-min-device-pixel-ratio: 1.25),
+       (min-resolution: 120dpi) {
+    /* Style adjustments for high resolution devices */
+}
+
+/* ==========================================================================
+   Print styles.
+   Inlined to avoid required HTTP connection: h5bp.com/r
+   ========================================================================== */
+
+@media print {
+    * {
+        background: transparent !important;
+        color: #000 !important; /* Black prints faster: h5bp.com/s */
+        box-shadow: none !important;
+        text-shadow: none !important;
+    }
+
+    a,
+    a:visited {
+        text-decoration: underline;
+    }
+
+    a[href]:after {
+        content: " (" attr(href) ")";
+    }
+
+    abbr[title]:after {
+        content: " (" attr(title) ")";
+    }
+
+    /*
+     * Don't show links for images, or javascript/internal links
+     */
+
+    .ir a:after,
+    a[href^="javascript:"]:after,
+    a[href^="#"]:after {
+        content: "";
+    }
+
+    pre,
+    blockquote {
+        border: 1px solid #999;
+        page-break-inside: avoid;
+    }
+
+    thead {
+        display: table-header-group; /* h5bp.com/t */
+    }
+
+    tr,
+    img {
+        page-break-inside: avoid;
+    }
+
+    img {
+        max-width: 100% !important;
+    }
+
+    @page {
+        margin: 0.5cm;
+    }
+
+    p,
+    h2,
+    h3 {
+        orphans: 3;
+        widows: 3;
+    }
+
+    h2,
+    h3 {
+        page-break-after: avoid;
+    }
+}
+
+  </style>
+
+  <script type="text/javascript">
+  function toggle(id, $link) {
+    $node = document.getElementById(id);
+    if (!$node)
+    return;
+    if (!$node.style.display || $node.style.display == 'none') {
+    $node.style.display = 'block';
+    $link.innerHTML = 'Hide source &nequiv;';
+    } else {
+    $node.style.display = 'none';
+    $link.innerHTML = 'Show source &equiv;';
+    }
+  }
+  </script>
+</head>
+<body>
+<a href="#" id="top">Top</a>
+
+<div id="container">
+    
+  
+  <div id="sidebar">
+    <h1>Index</h1>
+    <ul id="index">
+
+    <li class="set"><h3><a href="#header-functions">Functions</a></h3>
+      
+  <ul>
+    <li class="mono"><a href="#FancyLogger.processing.millis">millis</a></li>
+  </ul>
+
+    </li>
+
+    <li class="set"><h3><a href="#header-classes">Classes</a></h3>
+      <ul>
+        <li class="mono">
+        <span class="class_name"><a href="#FancyLogger.processing.MultiprocessingLogger">MultiprocessingLogger</a></span>
+        
+          
+  <ul>
+    <li class="mono"><a href="#FancyLogger.processing.MultiprocessingLogger.__init__">__init__</a></li>
+    <li class="mono"><a href="#FancyLogger.processing.MultiprocessingLogger.append_message">append_message</a></li>
+    <li class="mono"><a href="#FancyLogger.processing.MultiprocessingLogger.critical">critical</a></li>
+    <li class="mono"><a href="#FancyLogger.processing.MultiprocessingLogger.current_timestamp">current_timestamp</a></li>
+    <li class="mono"><a href="#FancyLogger.processing.MultiprocessingLogger.debug">debug</a></li>
+    <li class="mono"><a href="#FancyLogger.processing.MultiprocessingLogger.error">error</a></li>
+    <li class="mono"><a href="#FancyLogger.processing.MultiprocessingLogger.flush">flush</a></li>
+    <li class="mono"><a href="#FancyLogger.processing.MultiprocessingLogger.info">info</a></li>
+    <li class="mono"><a href="#FancyLogger.processing.MultiprocessingLogger.is_alive">is_alive</a></li>
+    <li class="mono"><a href="#FancyLogger.processing.MultiprocessingLogger.join">join</a></li>
+    <li class="mono"><a href="#FancyLogger.processing.MultiprocessingLogger.longest_bar_prefix_value">longest_bar_prefix_value</a></li>
+    <li class="mono"><a href="#FancyLogger.processing.MultiprocessingLogger.millis_to_human_readable">millis_to_human_readable</a></li>
+    <li class="mono"><a href="#FancyLogger.processing.MultiprocessingLogger.print_progress_bar">print_progress_bar</a></li>
+    <li class="mono"><a href="#FancyLogger.processing.MultiprocessingLogger.redraw">redraw</a></li>
+    <li class="mono"><a href="#FancyLogger.processing.MultiprocessingLogger.run">run</a></li>
+    <li class="mono"><a href="#FancyLogger.processing.MultiprocessingLogger.set_configuration">set_configuration</a></li>
+    <li class="mono"><a href="#FancyLogger.processing.MultiprocessingLogger.set_level">set_level</a></li>
+    <li class="mono"><a href="#FancyLogger.processing.MultiprocessingLogger.set_task">set_task</a></li>
+    <li class="mono"><a href="#FancyLogger.processing.MultiprocessingLogger.start">start</a></li>
+    <li class="mono"><a href="#FancyLogger.processing.MultiprocessingLogger.terminate">terminate</a></li>
+    <li class="mono"><a href="#FancyLogger.processing.MultiprocessingLogger.update">update</a></li>
+    <li class="mono"><a href="#FancyLogger.processing.MultiprocessingLogger.warning">warning</a></li>
+  </ul>
+
+        </li>
+      </ul>
+    </li>
+
+    </ul>
+  </div>
+
+    <article id="content">
+      
+  
+
+  
+
+
+  <header id="section-intro">
+  <h1 class="title"><span class="name">FancyLogger.processing</span> module</h1>
+  
+  
+  <p class="source_link"><a href="javascript:void(0);" onclick="toggle('source-FancyLogger.processing', this);">Show source &equiv;</a></p>
+  <div id="source-FancyLogger.processing" class="source">
+    <pre><code>#!/bin/env/python
+# coding: utf-8
+
+import logging
+import os
+import sys
+import time
+import dill
+from collections import OrderedDict
+from logging import getLogger, Formatter
+from logging.handlers import RotatingFileHandler
+from multiprocessing import Process
+
+from ..commands import *
+
+
+def millis():
+    """
+    Gives the current time in milliseconds.
+    :return: The current time in milliseconds.
+    """
+    return time.time() * 1000
+
+
+class MultiprocessingLogger(Process):
+    """
+    Core of the multiprocess logger library. Handles message and progress queue from other processes and does all the
+    rendering on the screen. Handles the file logger.
+    """
+
+    queue = None
+    "Queue to receive orders from all processes."
+    log = None
+    "The python logging's logger for files only."
+    os_flush_command = 'cls' if os.name == 'nt' else 'clear'
+    "The clear command on Unix and cls command on Windows."
+    longest_bar_prefix_size = 0
+    "Defines the longest task prefix in order to align progress bars to the left."
+
+    refresh_timer = millis()
+    "The redraw timer."
+    changes_made = False
+    "Indicates if a new message has been posted or if a task has updated. If none, then there is no need to redraw."
+
+    tasks = OrderedDict()
+    "List of tasks identified by an id. One progress bar per task."
+    to_delete = []
+    "When a task is marked for deletion, it is added in this list for next redraw to process it."
+
+    # ------------- Customizable parameters
+    messages = None
+    "Cycling list of log messages below the progress bars."
+    permanent_progressbar_slots = None
+    """
+    Defines the vertical space (in bar slots) to keep at all times between progress bars section and messages
+    section.
+    """
+    redraw_frequency_millis = None
+    """
+    Defines the minimum time in milliseconds between two redraws. It may be more because the redraw rate depends
+    upon time AND method calls.
+    """
+    level = None
+    "The logging level (from standard logging module)."
+    task_millis_to_removal = None
+    """
+    Minimum number of milliseconds at maximum completion before a progress bar is removed from display.
+    The progress bar may vanish at a further time as the redraw rate depends upon time AND method calls.
+    """
+    # -------------
+
+    def __init__(self,
+                 queue,
+                 message_number,
+                 permanent_progressbar_slots,
+                 redraw_frequency_millis,
+                 level,
+                 task_millis_to_removal):
+        """
+        Defines the current configuration of the logger and the queue to receive messages from remote processes. Must be
+        used one time only.
+        :param queue:                       Queue to receive orders from all processes. Must be the same object
+                                            reference as processes that send log messages and progress updates.
+        :param message_number:              Number of simultaneously displayed messages below progress bars.
+        :param permanent_progressbar_slots: The amount of vertical space (bar slots) to keep at all times,
+                                            so the message logger will not move anymore if the bar number is equal or
+                                            lower than this parameter.
+        :param redraw_frequency_millis:     Minimum time lapse in milliseconds between two redraws. It may be
+                                            more because the redraw rate depends upon time AND method calls.
+        :param level:                       The logging level (from standard logging module).
+        :param task_millis_to_removal:      Minimum time lapse in milliseconds at maximum completion before
+                                            a progress bar is removed from display. The progress bar may vanish at a
+                                            further time as the redraw rate depends upon time AND method calls.
+        """
+        super(MultiprocessingLogger, self).__init__()
+
+        self.queue = queue
+
+        self.set_configuration(SetConfigurationCommand(task_millis_to_removal=task_millis_to_removal,
+                                                       level=level,
+                                                       permanent_progressbar_slots=permanent_progressbar_slots,
+                                                       message_number=message_number,
+                                                       redraw_frequency_millis=redraw_frequency_millis))
+
+    def set_configuration(self, command):
+        """
+        Defines the current configuration of the logger. Can be used at any moment during runtime to modify the logger
+        behavior.
+        :param command: The command object that holds all the necessary information from the remote process.
+        """
+        self.permanent_progressbar_slots = command.permanent_progressbar_slots
+        self.redraw_frequency_millis = command.redraw_frequency_millis
+        self.level = command.level
+        self.task_millis_to_removal = command.task_millis_to_removal
+
+        # If messages already exists
+        if self.messages:
+            current_length = len(self.messages)
+
+            if command.message_number < current_length:
+                # Delete messages from 0 to desired index to keep most recent messages
+                range_to_delete = current_length - command.message_number
+                for i in range(range_to_delete):
+                    del self.messages[0]
+
+            elif command.message_number > current_length:
+                # Add empty slots at 0
+                range_to_add = command.message_number - current_length
+                for i in range(range_to_add):
+                    self.messages.insert(0, '')
+        else:
+            # Else, initialize a new list
+            self.messages = command.message_number * ['']
+
+    def run(self):
+        """
+        The main loop for the logger process. Will receive remote processes orders one by one and wait for the next one.
+        Then return from this method when the main application calls for exit, which is a regular command.
+        """
+        # Initialize the logging.log
+        self.log = getLogger()
+
+        file_handler = RotatingFileHandler('logging.log',
+                                           maxBytes=10485760,  # 10 MB
+                                           backupCount=5)
+        file_handler.setFormatter(Formatter('%(asctime)s [%(levelname)s] %(message)s'))
+
+        self.log.addHandler(file_handler)
+
+        self.log.setLevel(logging.INFO)
+
+        while True:
+            o = dill.loads(self.queue.get())
+
+            if isinstance(o, LogMessageCommand):
+                if o.level == logging.DEBUG:
+                    self.debug(command=o)
+                elif o.level == logging.INFO:
+                    self.info(command=o)
+                elif o.level == logging.WARNING:
+                    self.warning(command=o)
+                elif o.level == logging.ERROR:
+                    self.error(command=o)
+                elif o.level == logging.CRITICAL:
+                    self.critical(command=o)
+
+            elif isinstance(o, UpdateProgressCommand):
+                self.update(command=o)
+
+            elif isinstance(o, NewTaskCommand):
+                self.set_task(command=o)
+
+            elif isinstance(o, FlushCommand):
+                self.flush()
+
+            elif isinstance(o, SetConfigurationCommand):
+                self.set_configuration(command=o)
+
+            elif isinstance(o, ExitCommand):
+                return
+
+            elif isinstance(o, SetLevelCommand):
+                self.set_level(command=o)
+
+    def longest_bar_prefix_value(self):
+        """
+        Calculates the longest progress bar prefix in order to keep all progress bars left-aligned.
+        :return: Length of the longest task prefix in character unit.
+        """
+        longest = 0
+        for key, t in self.tasks.items():
+            size = len(t.prefix)
+            if size > longest:
+                longest = size
+
+        return longest
+
+    @staticmethod
+    def millis_to_human_readable(time_millis):
+        """
+        Calculates the equivalent time of the given milliseconds into a human readable string from seconds to weeks.
+        :param time_millis: Time in milliseconds using python time library.
+        :return:            Human readable time string. Example: 2 min 3 s.
+        """
+        weeks = 0
+        days = 0
+        hours = 0
+        minutes = 0
+        seconds = round(time_millis / 1000)
+
+        while seconds > 59:
+            seconds -= 60
+            minutes += 1
+
+        while minutes > 59:
+            minutes -= 60
+            hours += 1
+
+        while hours > 23:
+            hours -= 24
+            days += 1
+
+        while days > 6:
+            hours -= 7
+            weeks += 1
+
+        if weeks > 0:
+            output = '{} w {} d {} h {} min {} s'.format(weeks, days, hours, minutes, seconds)
+        elif days > 0:
+            output = '{} d {} h {} min {} s'.format(days, hours, minutes, seconds)
+        elif hours > 0:
+            output = '{} h {} min {} s'.format(hours, minutes, seconds)
+        elif minutes > 0:
+            output = '{} min {} s'.format(minutes, seconds)
+        elif seconds > 0:
+            output = '{} s'.format(seconds)
+        else:
+            output = ''
+
+        return output
+
+    def print_progress_bar(self, task):
+        """
+        Draws a progress bar on screen based on the given information using standard output (stdout).
+        :param task: TaskProgress object containing all required information to draw a progress bar at the given state.
+        """
+        str_format = "{0:." + str(task.decimals) + "f}"
+        percents = str_format.format(100 * (task.progress / float(task.total)))
+        filled_length = int(round(task.bar_length * task.progress / float(task.total)))
+        bar = '█' * filled_length + '-' * (task.bar_length - filled_length)
+
+        # Build elapsed time if needed
+        elapsed_time = None
+
+        if task.display_time:
+            if task.end_time:
+                # If the task has ended, stop the chrono
+                if not task.elapsed_time_at_end:
+                    task.elapsed_time_at_end = self.millis_to_human_readable(task.end_time - task.begin_time)
+                elapsed_time = task.elapsed_time_at_end
+            else:
+                # If task is new then start the chrono
+                if not task.begin_time:
+                    task.begin_time = millis()
+                elapsed_time = self.millis_to_human_readable(millis() - task.begin_time)
+
+        prefix_pattern = '%{}s'.format(self.longest_bar_prefix_size)
+        time_container_pattern = '(%s)' if task.display_time and not task.end_time else '[%s]'
+
+        if len(task.suffix) > 0 and task.display_time:
+            sys.stdout.write('\n {} |%s| %3s %% {} - %s'.format(prefix_pattern, time_container_pattern)
+                             % (task.prefix, bar, percents, elapsed_time, task.suffix))
+        elif len(task.suffix) > 0 and not task.display_time:
+            sys.stdout.write('\n {} |%s| %3s %% - %s'.format(prefix_pattern)
+                             % (task.prefix, bar, percents, task.suffix))
+        elif task.display_time and not len(task.suffix) > 0:
+            sys.stdout.write('\n {} |%s| %3s %% {}'.format(prefix_pattern, time_container_pattern)
+                             % (task.prefix, bar, percents, elapsed_time))
+        else:
+            sys.stdout.write('\n {} |%s| %3s %%'.format(prefix_pattern)
+                             % (task.prefix, bar, percents))
+
+        sys.stdout.write('\n')
+        sys.stdout.flush()
+
+    def redraw(self):
+        """
+        Clears the console and performs a complete redraw of all progress bars and then awaiting logger messages if the
+        minimum time elapsed since the last redraw is enough.
+        """
+
+        # Check if the refresh time lapse has elapsed and if a change requires to redraw
+        lapse_since_last_refresh = millis() - self.refresh_timer
+        if not lapse_since_last_refresh > self.redraw_frequency_millis or not self.changes_made:
+            return
+        # If yes, then reset change indicator and chrono
+        self.changes_made = False
+        self.refresh_timer = millis()
+
+        # Clear the system console
+        os.system(self.os_flush_command)
+
+        # For each task, check if it has complete. If so, start its chrono
+        # Once the chrono has reached the maximum timeout time, delete the task
+        # For the other tasks that have not completed yet, redraw them
+
+        # Delete tasks that have been marked for deletion
+        if len(self.to_delete) > 0:
+            for task_id in self.to_delete:
+                del self.tasks[task_id]
+            self.to_delete = []
+            # If a task has been deleted, recalculate the maximum prefix length to keep progress bars aligned
+            self.longest_bar_prefix_size = self.longest_bar_prefix_value()
+
+        for task_id, task in self.tasks.items():
+
+            # If a task has completed, force its value to its maximum to prevent progress bar overflow
+            # Then start its timeout chrono
+            if task.progress >= task.total and not task.keep_alive:
+                # Prevent bar overflow
+                task.progress = task.total
+
+                # Start task's timeout chrono
+                if not task.timeout_chrono:
+                    task.timeout_chrono = millis()
+                # If task's chrono has reached the maximum timeout time, mark it for deletion
+                elif millis() - task.timeout_chrono >= self.task_millis_to_removal:
+                    self.to_delete.append(task_id)
+
+            # Redraw the task's progress bar
+            self.print_progress_bar(task=task)
+
+        # Keep space for future tasks if needed
+        slots = self.permanent_progressbar_slots - len(self.tasks)
+        if slots > 0:
+            for i in range(slots):
+                sys.stdout.write('\n\t\t---\n')
+
+        # Draw some space between bars and messages
+        if self.permanent_progressbar_slots > 0 or len(self.tasks) > 0:
+            sys.stdout.write('\n\n')
+
+        # Print all the last log messages
+        for m in self.messages:
+            sys.stdout.write(m)
+
+    def append_message(self,
+                       message):
+        """
+        Appends the given message at the end of the message list and delete the oldest one (top most).
+        :param message: The formatted text to log.
+        """
+        # Delete the first message of the list
+        del self.messages[0]
+
+        # Append the new message at the end
+        self.messages.append(message)
+        self.changes_made = True
+
+        # Redraw
+        self.redraw()
+
+    def flush(self):
+        """
+        Flushes the remaining messages and progress bars state by forcing redraw. Can be useful if you want to be sure
+        that a message or progress has been updated in display at a given moment in code, like when you are exiting an
+        application or doing some kind of synchronized operations.
+        """
+        self.refresh_timer = 0
+        self.changes_made = True
+
+        self.redraw()
+
+    @staticmethod
+    def current_timestamp():
+        """
+        Gets the current timestamp.
+        :return: The timestamp string to append to log messages.
+        """
+        return time.strftime('%d %B %Y %H:%M:%S').lower()
+
+    def set_level(self, command):
+        """
+        Defines the logging level (from standard logging module) for log messages.
+        :param command: The command object that holds all the necessary information from the remote process.
+        """
+        if not command.console_only:
+            self.log.setLevel(command.level)
+
+        self.level = command.level
+
+    def set_task(self, command):
+        """
+        Defines a new progress bar with the given information.
+        :param command: The command object that holds all the necessary information from the remote process.
+        """
+        self.tasks[command.task_id] = command.task
+
+        self.longest_bar_prefix_size = self.longest_bar_prefix_value()
+
+        self.changes_made = True
+
+    def update(self, command):
+        """
+        Defines the current progress for this progress bar id in iteration units (not percent).
+        If the given id does not exist or the given progress is identical to the current, then does nothing.
+        Logger uses a redraw rate because of console flickering. That means it will not draw new messages or progress
+        at the very time they are being logged but their timestamp will be captured at the right time. Logger will
+        redraw at a given time period AND when new messages or progress are logged. If you still want to force redraw
+        immediately (may produce flickering) then call 'flush' method.
+        :param command: The command object that holds all the necessary information from the remote process.
+        """
+        if command.task_id in self.tasks and self.tasks[command.task_id].set_progress(command.progress):
+            self.changes_made = True
+
+            # Redraw
+            self.redraw()
+
+    def debug(self, command):
+        """
+        Posts a debug message adding a timestamp and logging level to it for both file and console handlers.
+        Logger uses a redraw rate because of console flickering. That means it will not draw new messages or progress
+        at the very time they are being logged but their timestamp will be captured at the right time. Logger will
+        redraw at a given time period AND when new messages or progress are logged. If you still want to force redraw
+        immediately (may produce flickering) then call 'flush' method.
+        :param command: The command object that holds all the necessary information from the remote process.
+        """
+        if self.level == logging.DEBUG:
+            message = '{} [{}]\t{}\n'.format(self.current_timestamp(), 'DEBUG', command.text)
+            self.append_message(message)
+
+        self.log.debug('\t{}'.format(command.text))
+
+    def info(self, command):
+        """
+        Posts an info message adding a timestamp and logging level to it for both file and console handlers.
+        Logger uses a redraw rate because of console flickering. That means it will not draw new messages or progress
+        at the very time they are being logged but their timestamp will be captured at the right time. Logger will
+        redraw at a given time period AND when new messages or progress are logged. If you still want to force redraw
+        immediately (may produce flickering) then call 'flush' method.
+        :param command: The command object that holds all the necessary information from the remote process.
+        """
+        if (self.level == logging.DEBUG
+                or self.level == logging.INFO):
+
+            message = '{} [{}]\t{}\n'.format(self.current_timestamp(), 'INFO', command.text)
+            self.append_message(message)
+
+        self.log.info('\t\t{}'.format(command.text))
+
+    def warning(self, command):
+        """
+        Posts a warning message adding a timestamp and logging level to it for both file and console handlers.
+        Logger uses a redraw rate because of console flickering. That means it will not draw new messages or progress
+        at the very time they are being logged but their timestamp will be captured at the right time. Logger will
+        redraw at a given time period AND when new messages or progress are logged. If you still want to force redraw
+        immediately (may produce flickering) then call 'flush' method.
+        :param command: The command object that holds all the necessary information from the remote process.
+        """
+        if (self.level == logging.DEBUG
+                or self.level == logging.INFO
+                or self.level == logging.WARNING):
+
+            message = '{} [{}]\t{}\n'.format(self.current_timestamp(), 'WARNING', command.text)
+            self.append_message(message)
+
+        self.log.warning('\t{}'.format(command.text))
+
+    def error(self, command):
+        """
+        Posts an error message adding a timestamp and logging level to it for both file and console handlers.
+        Logger uses a redraw rate because of console flickering. That means it will not draw new messages or progress
+        at the very time they are being logged but their timestamp will be captured at the right time. Logger will
+        redraw at a given time period AND when new messages or progress are logged. If you still want to force redraw
+        immediately (may produce flickering) then call 'flush' method.
+        :param command: The command object that holds all the necessary information from the remote process.
+        """
+        if (self.level == logging.DEBUG
+                or self.level == logging.INFO
+                or self.level == logging.WARNING
+                or self.level == logging.ERROR):
+
+            message = '{} [{}]\t{}\n'.format(self.current_timestamp(), 'ERROR', command.text)
+            self.append_message(message)
+
+        self.log.error('\t{}'.format(command.text))
+
+    def critical(self, command):
+        """
+        Posts a critical message adding a timestamp and logging level to it for both file and console handlers.
+        Logger uses a redraw rate because of console flickering. That means it will not draw new messages or progress
+        at the very time they are being logged but their timestamp will be captured at the right time. Logger will
+        redraw at a given time period AND when new messages or progress are logged. If you still want to force redraw
+        immediately (may produce flickering) then call 'flush' method.
+        :param command: The command object that holds all the necessary information from the remote process.
+        """
+        if (self.level == logging.DEBUG
+                or self.level == logging.INFO
+                or self.level == logging.WARNING
+                or self.level == logging.ERROR
+                or self.level == logging.CRITICAL):
+
+            message = '{} [{}]\t{}\n'.format(self.current_timestamp(), 'CRITICAL', command.text)
+            self.append_message(message)
+
+        self.log.critical('\t{}'.format(command.text))
+</code></pre>
+  </div>
+
+  </header>
+
+  <section id="section-items">
+
+    <h2 class="section-title" id="header-functions">Functions</h2>
+      
+  <div class="item">
+    <div class="name def" id="FancyLogger.processing.millis">
+    <p>def <span class="ident">millis</span>(</p><p>)</p>
+    </div>
+    
+
+    
+  
+    <div class="desc"><p>Gives the current time in milliseconds.
+:return: The current time in milliseconds.</p></div>
+  <div class="source_cont">
+  <p class="source_link"><a href="javascript:void(0);" onclick="toggle('source-FancyLogger.processing.millis', this);">Show source &equiv;</a></p>
+  <div id="source-FancyLogger.processing.millis" class="source">
+    <pre><code>def millis():
+    """
+    Gives the current time in milliseconds.
+    :return: The current time in milliseconds.
+    """
+    return time.time() * 1000
+</code></pre>
+  </div>
+</div>
+
+  </div>
+  
+
+    <h2 class="section-title" id="header-classes">Classes</h2>
+      
+      <div class="item">
+      <p id="FancyLogger.processing.MultiprocessingLogger" class="name">class <span class="ident">MultiprocessingLogger</span></p>
+      
+  
+    <div class="desc"><p>Core of the multiprocess logger library. Handles message and progress queue from other processes and does all the
+rendering on the screen. Handles the file logger.</p></div>
+  <div class="source_cont">
+  <p class="source_link"><a href="javascript:void(0);" onclick="toggle('source-FancyLogger.processing.MultiprocessingLogger', this);">Show source &equiv;</a></p>
+  <div id="source-FancyLogger.processing.MultiprocessingLogger" class="source">
+    <pre><code>class MultiprocessingLogger(Process):
+    """
+    Core of the multiprocess logger library. Handles message and progress queue from other processes and does all the
+    rendering on the screen. Handles the file logger.
+    """
+
+    queue = None
+    "Queue to receive orders from all processes."
+    log = None
+    "The python logging's logger for files only."
+    os_flush_command = 'cls' if os.name == 'nt' else 'clear'
+    "The clear command on Unix and cls command on Windows."
+    longest_bar_prefix_size = 0
+    "Defines the longest task prefix in order to align progress bars to the left."
+
+    refresh_timer = millis()
+    "The redraw timer."
+    changes_made = False
+    "Indicates if a new message has been posted or if a task has updated. If none, then there is no need to redraw."
+
+    tasks = OrderedDict()
+    "List of tasks identified by an id. One progress bar per task."
+    to_delete = []
+    "When a task is marked for deletion, it is added in this list for next redraw to process it."
+
+    # ------------- Customizable parameters
+    messages = None
+    "Cycling list of log messages below the progress bars."
+    permanent_progressbar_slots = None
+    """
+    Defines the vertical space (in bar slots) to keep at all times between progress bars section and messages
+    section.
+    """
+    redraw_frequency_millis = None
+    """
+    Defines the minimum time in milliseconds between two redraws. It may be more because the redraw rate depends
+    upon time AND method calls.
+    """
+    level = None
+    "The logging level (from standard logging module)."
+    task_millis_to_removal = None
+    """
+    Minimum number of milliseconds at maximum completion before a progress bar is removed from display.
+    The progress bar may vanish at a further time as the redraw rate depends upon time AND method calls.
+    """
+    # -------------
+
+    def __init__(self,
+                 queue,
+                 message_number,
+                 permanent_progressbar_slots,
+                 redraw_frequency_millis,
+                 level,
+                 task_millis_to_removal):
+        """
+        Defines the current configuration of the logger and the queue to receive messages from remote processes. Must be
+        used one time only.
+        :param queue:                       Queue to receive orders from all processes. Must be the same object
+                                            reference as processes that send log messages and progress updates.
+        :param message_number:              Number of simultaneously displayed messages below progress bars.
+        :param permanent_progressbar_slots: The amount of vertical space (bar slots) to keep at all times,
+                                            so the message logger will not move anymore if the bar number is equal or
+                                            lower than this parameter.
+        :param redraw_frequency_millis:     Minimum time lapse in milliseconds between two redraws. It may be
+                                            more because the redraw rate depends upon time AND method calls.
+        :param level:                       The logging level (from standard logging module).
+        :param task_millis_to_removal:      Minimum time lapse in milliseconds at maximum completion before
+                                            a progress bar is removed from display. The progress bar may vanish at a
+                                            further time as the redraw rate depends upon time AND method calls.
+        """
+        super(MultiprocessingLogger, self).__init__()
+
+        self.queue = queue
+
+        self.set_configuration(SetConfigurationCommand(task_millis_to_removal=task_millis_to_removal,
+                                                       level=level,
+                                                       permanent_progressbar_slots=permanent_progressbar_slots,
+                                                       message_number=message_number,
+                                                       redraw_frequency_millis=redraw_frequency_millis))
+
+    def set_configuration(self, command):
+        """
+        Defines the current configuration of the logger. Can be used at any moment during runtime to modify the logger
+        behavior.
+        :param command: The command object that holds all the necessary information from the remote process.
+        """
+        self.permanent_progressbar_slots = command.permanent_progressbar_slots
+        self.redraw_frequency_millis = command.redraw_frequency_millis
+        self.level = command.level
+        self.task_millis_to_removal = command.task_millis_to_removal
+
+        # If messages already exists
+        if self.messages:
+            current_length = len(self.messages)
+
+            if command.message_number < current_length:
+                # Delete messages from 0 to desired index to keep most recent messages
+                range_to_delete = current_length - command.message_number
+                for i in range(range_to_delete):
+                    del self.messages[0]
+
+            elif command.message_number > current_length:
+                # Add empty slots at 0
+                range_to_add = command.message_number - current_length
+                for i in range(range_to_add):
+                    self.messages.insert(0, '')
+        else:
+            # Else, initialize a new list
+            self.messages = command.message_number * ['']
+
+    def run(self):
+        """
+        The main loop for the logger process. Will receive remote processes orders one by one and wait for the next one.
+        Then return from this method when the main application calls for exit, which is a regular command.
+        """
+        # Initialize the logging.log
+        self.log = getLogger()
+
+        file_handler = RotatingFileHandler('logging.log',
+                                           maxBytes=10485760,  # 10 MB
+                                           backupCount=5)
+        file_handler.setFormatter(Formatter('%(asctime)s [%(levelname)s] %(message)s'))
+
+        self.log.addHandler(file_handler)
+
+        self.log.setLevel(logging.INFO)
+
+        while True:
+            o = dill.loads(self.queue.get())
+
+            if isinstance(o, LogMessageCommand):
+                if o.level == logging.DEBUG:
+                    self.debug(command=o)
+                elif o.level == logging.INFO:
+                    self.info(command=o)
+                elif o.level == logging.WARNING:
+                    self.warning(command=o)
+                elif o.level == logging.ERROR:
+                    self.error(command=o)
+                elif o.level == logging.CRITICAL:
+                    self.critical(command=o)
+
+            elif isinstance(o, UpdateProgressCommand):
+                self.update(command=o)
+
+            elif isinstance(o, NewTaskCommand):
+                self.set_task(command=o)
+
+            elif isinstance(o, FlushCommand):
+                self.flush()
+
+            elif isinstance(o, SetConfigurationCommand):
+                self.set_configuration(command=o)
+
+            elif isinstance(o, ExitCommand):
+                return
+
+            elif isinstance(o, SetLevelCommand):
+                self.set_level(command=o)
+
+    def longest_bar_prefix_value(self):
+        """
+        Calculates the longest progress bar prefix in order to keep all progress bars left-aligned.
+        :return: Length of the longest task prefix in character unit.
+        """
+        longest = 0
+        for key, t in self.tasks.items():
+            size = len(t.prefix)
+            if size > longest:
+                longest = size
+
+        return longest
+
+    @staticmethod
+    def millis_to_human_readable(time_millis):
+        """
+        Calculates the equivalent time of the given milliseconds into a human readable string from seconds to weeks.
+        :param time_millis: Time in milliseconds using python time library.
+        :return:            Human readable time string. Example: 2 min 3 s.
+        """
+        weeks = 0
+        days = 0
+        hours = 0
+        minutes = 0
+        seconds = round(time_millis / 1000)
+
+        while seconds > 59:
+            seconds -= 60
+            minutes += 1
+
+        while minutes > 59:
+            minutes -= 60
+            hours += 1
+
+        while hours > 23:
+            hours -= 24
+            days += 1
+
+        while days > 6:
+            hours -= 7
+            weeks += 1
+
+        if weeks > 0:
+            output = '{} w {} d {} h {} min {} s'.format(weeks, days, hours, minutes, seconds)
+        elif days > 0:
+            output = '{} d {} h {} min {} s'.format(days, hours, minutes, seconds)
+        elif hours > 0:
+            output = '{} h {} min {} s'.format(hours, minutes, seconds)
+        elif minutes > 0:
+            output = '{} min {} s'.format(minutes, seconds)
+        elif seconds > 0:
+            output = '{} s'.format(seconds)
+        else:
+            output = ''
+
+        return output
+
+    def print_progress_bar(self, task):
+        """
+        Draws a progress bar on screen based on the given information using standard output (stdout).
+        :param task: TaskProgress object containing all required information to draw a progress bar at the given state.
+        """
+        str_format = "{0:." + str(task.decimals) + "f}"
+        percents = str_format.format(100 * (task.progress / float(task.total)))
+        filled_length = int(round(task.bar_length * task.progress / float(task.total)))
+        bar = '█' * filled_length + '-' * (task.bar_length - filled_length)
+
+        # Build elapsed time if needed
+        elapsed_time = None
+
+        if task.display_time:
+            if task.end_time:
+                # If the task has ended, stop the chrono
+                if not task.elapsed_time_at_end:
+                    task.elapsed_time_at_end = self.millis_to_human_readable(task.end_time - task.begin_time)
+                elapsed_time = task.elapsed_time_at_end
+            else:
+                # If task is new then start the chrono
+                if not task.begin_time:
+                    task.begin_time = millis()
+                elapsed_time = self.millis_to_human_readable(millis() - task.begin_time)
+
+        prefix_pattern = '%{}s'.format(self.longest_bar_prefix_size)
+        time_container_pattern = '(%s)' if task.display_time and not task.end_time else '[%s]'
+
+        if len(task.suffix) > 0 and task.display_time:
+            sys.stdout.write('\n {} |%s| %3s %% {} - %s'.format(prefix_pattern, time_container_pattern)
+                             % (task.prefix, bar, percents, elapsed_time, task.suffix))
+        elif len(task.suffix) > 0 and not task.display_time:
+            sys.stdout.write('\n {} |%s| %3s %% - %s'.format(prefix_pattern)
+                             % (task.prefix, bar, percents, task.suffix))
+        elif task.display_time and not len(task.suffix) > 0:
+            sys.stdout.write('\n {} |%s| %3s %% {}'.format(prefix_pattern, time_container_pattern)
+                             % (task.prefix, bar, percents, elapsed_time))
+        else:
+            sys.stdout.write('\n {} |%s| %3s %%'.format(prefix_pattern)
+                             % (task.prefix, bar, percents))
+
+        sys.stdout.write('\n')
+        sys.stdout.flush()
+
+    def redraw(self):
+        """
+        Clears the console and performs a complete redraw of all progress bars and then awaiting logger messages if the
+        minimum time elapsed since the last redraw is enough.
+        """
+
+        # Check if the refresh time lapse has elapsed and if a change requires to redraw
+        lapse_since_last_refresh = millis() - self.refresh_timer
+        if not lapse_since_last_refresh > self.redraw_frequency_millis or not self.changes_made:
+            return
+        # If yes, then reset change indicator and chrono
+        self.changes_made = False
+        self.refresh_timer = millis()
+
+        # Clear the system console
+        os.system(self.os_flush_command)
+
+        # For each task, check if it has complete. If so, start its chrono
+        # Once the chrono has reached the maximum timeout time, delete the task
+        # For the other tasks that have not completed yet, redraw them
+
+        # Delete tasks that have been marked for deletion
+        if len(self.to_delete) > 0:
+            for task_id in self.to_delete:
+                del self.tasks[task_id]
+            self.to_delete = []
+            # If a task has been deleted, recalculate the maximum prefix length to keep progress bars aligned
+            self.longest_bar_prefix_size = self.longest_bar_prefix_value()
+
+        for task_id, task in self.tasks.items():
+
+            # If a task has completed, force its value to its maximum to prevent progress bar overflow
+            # Then start its timeout chrono
+            if task.progress >= task.total and not task.keep_alive:
+                # Prevent bar overflow
+                task.progress = task.total
+
+                # Start task's timeout chrono
+                if not task.timeout_chrono:
+                    task.timeout_chrono = millis()
+                # If task's chrono has reached the maximum timeout time, mark it for deletion
+                elif millis() - task.timeout_chrono >= self.task_millis_to_removal:
+                    self.to_delete.append(task_id)
+
+            # Redraw the task's progress bar
+            self.print_progress_bar(task=task)
+
+        # Keep space for future tasks if needed
+        slots = self.permanent_progressbar_slots - len(self.tasks)
+        if slots > 0:
+            for i in range(slots):
+                sys.stdout.write('\n\t\t---\n')
+
+        # Draw some space between bars and messages
+        if self.permanent_progressbar_slots > 0 or len(self.tasks) > 0:
+            sys.stdout.write('\n\n')
+
+        # Print all the last log messages
+        for m in self.messages:
+            sys.stdout.write(m)
+
+    def append_message(self,
+                       message):
+        """
+        Appends the given message at the end of the message list and delete the oldest one (top most).
+        :param message: The formatted text to log.
+        """
+        # Delete the first message of the list
+        del self.messages[0]
+
+        # Append the new message at the end
+        self.messages.append(message)
+        self.changes_made = True
+
+        # Redraw
+        self.redraw()
+
+    def flush(self):
+        """
+        Flushes the remaining messages and progress bars state by forcing redraw. Can be useful if you want to be sure
+        that a message or progress has been updated in display at a given moment in code, like when you are exiting an
+        application or doing some kind of synchronized operations.
+        """
+        self.refresh_timer = 0
+        self.changes_made = True
+
+        self.redraw()
+
+    @staticmethod
+    def current_timestamp():
+        """
+        Gets the current timestamp.
+        :return: The timestamp string to append to log messages.
+        """
+        return time.strftime('%d %B %Y %H:%M:%S').lower()
+
+    def set_level(self, command):
+        """
+        Defines the logging level (from standard logging module) for log messages.
+        :param command: The command object that holds all the necessary information from the remote process.
+        """
+        if not command.console_only:
+            self.log.setLevel(command.level)
+
+        self.level = command.level
+
+    def set_task(self, command):
+        """
+        Defines a new progress bar with the given information.
+        :param command: The command object that holds all the necessary information from the remote process.
+        """
+        self.tasks[command.task_id] = command.task
+
+        self.longest_bar_prefix_size = self.longest_bar_prefix_value()
+
+        self.changes_made = True
+
+    def update(self, command):
+        """
+        Defines the current progress for this progress bar id in iteration units (not percent).
+        If the given id does not exist or the given progress is identical to the current, then does nothing.
+        Logger uses a redraw rate because of console flickering. That means it will not draw new messages or progress
+        at the very time they are being logged but their timestamp will be captured at the right time. Logger will
+        redraw at a given time period AND when new messages or progress are logged. If you still want to force redraw
+        immediately (may produce flickering) then call 'flush' method.
+        :param command: The command object that holds all the necessary information from the remote process.
+        """
+        if command.task_id in self.tasks and self.tasks[command.task_id].set_progress(command.progress):
+            self.changes_made = True
+
+            # Redraw
+            self.redraw()
+
+    def debug(self, command):
+        """
+        Posts a debug message adding a timestamp and logging level to it for both file and console handlers.
+        Logger uses a redraw rate because of console flickering. That means it will not draw new messages or progress
+        at the very time they are being logged but their timestamp will be captured at the right time. Logger will
+        redraw at a given time period AND when new messages or progress are logged. If you still want to force redraw
+        immediately (may produce flickering) then call 'flush' method.
+        :param command: The command object that holds all the necessary information from the remote process.
+        """
+        if self.level == logging.DEBUG:
+            message = '{} [{}]\t{}\n'.format(self.current_timestamp(), 'DEBUG', command.text)
+            self.append_message(message)
+
+        self.log.debug('\t{}'.format(command.text))
+
+    def info(self, command):
+        """
+        Posts an info message adding a timestamp and logging level to it for both file and console handlers.
+        Logger uses a redraw rate because of console flickering. That means it will not draw new messages or progress
+        at the very time they are being logged but their timestamp will be captured at the right time. Logger will
+        redraw at a given time period AND when new messages or progress are logged. If you still want to force redraw
+        immediately (may produce flickering) then call 'flush' method.
+        :param command: The command object that holds all the necessary information from the remote process.
+        """
+        if (self.level == logging.DEBUG
+                or self.level == logging.INFO):
+
+            message = '{} [{}]\t{}\n'.format(self.current_timestamp(), 'INFO', command.text)
+            self.append_message(message)
+
+        self.log.info('\t\t{}'.format(command.text))
+
+    def warning(self, command):
+        """
+        Posts a warning message adding a timestamp and logging level to it for both file and console handlers.
+        Logger uses a redraw rate because of console flickering. That means it will not draw new messages or progress
+        at the very time they are being logged but their timestamp will be captured at the right time. Logger will
+        redraw at a given time period AND when new messages or progress are logged. If you still want to force redraw
+        immediately (may produce flickering) then call 'flush' method.
+        :param command: The command object that holds all the necessary information from the remote process.
+        """
+        if (self.level == logging.DEBUG
+                or self.level == logging.INFO
+                or self.level == logging.WARNING):
+
+            message = '{} [{}]\t{}\n'.format(self.current_timestamp(), 'WARNING', command.text)
+            self.append_message(message)
+
+        self.log.warning('\t{}'.format(command.text))
+
+    def error(self, command):
+        """
+        Posts an error message adding a timestamp and logging level to it for both file and console handlers.
+        Logger uses a redraw rate because of console flickering. That means it will not draw new messages or progress
+        at the very time they are being logged but their timestamp will be captured at the right time. Logger will
+        redraw at a given time period AND when new messages or progress are logged. If you still want to force redraw
+        immediately (may produce flickering) then call 'flush' method.
+        :param command: The command object that holds all the necessary information from the remote process.
+        """
+        if (self.level == logging.DEBUG
+                or self.level == logging.INFO
+                or self.level == logging.WARNING
+                or self.level == logging.ERROR):
+
+            message = '{} [{}]\t{}\n'.format(self.current_timestamp(), 'ERROR', command.text)
+            self.append_message(message)
+
+        self.log.error('\t{}'.format(command.text))
+
+    def critical(self, command):
+        """
+        Posts a critical message adding a timestamp and logging level to it for both file and console handlers.
+        Logger uses a redraw rate because of console flickering. That means it will not draw new messages or progress
+        at the very time they are being logged but their timestamp will be captured at the right time. Logger will
+        redraw at a given time period AND when new messages or progress are logged. If you still want to force redraw
+        immediately (may produce flickering) then call 'flush' method.
+        :param command: The command object that holds all the necessary information from the remote process.
+        """
+        if (self.level == logging.DEBUG
+                or self.level == logging.INFO
+                or self.level == logging.WARNING
+                or self.level == logging.ERROR
+                or self.level == logging.CRITICAL):
+
+            message = '{} [{}]\t{}\n'.format(self.current_timestamp(), 'CRITICAL', command.text)
+            self.append_message(message)
+
+        self.log.critical('\t{}'.format(command.text))
+</code></pre>
+  </div>
+</div>
+
+
+      <div class="class">
+          <h3>Ancestors (in MRO)</h3>
+          <ul class="class_list">
+          <li><a href="#FancyLogger.processing.MultiprocessingLogger">MultiprocessingLogger</a></li>
+          <li>multiprocessing.context.Process</li>
+          <li>multiprocessing.process.BaseProcess</li>
+          <li>builtins.object</li>
+          </ul>
+          <h3>Class variables</h3>
+            <div class="item">
+            <p id="FancyLogger.processing.MultiprocessingLogger.changes_made" class="name">var <span class="ident">changes_made</span></p>
+            
+
+            
+  
+    <div class="desc"><p>Indicates if a new message has been posted or if a task has updated. If none, then there is no need to redraw.</p></div>
+  <div class="source_cont">
+</div>
+
+            </div>
+            <div class="item">
+            <p id="FancyLogger.processing.MultiprocessingLogger.level" class="name">var <span class="ident">level</span></p>
+            
+
+            
+  
+    <div class="desc"><p>The logging level (from standard logging module).</p></div>
+  <div class="source_cont">
+</div>
+
+            </div>
+            <div class="item">
+            <p id="FancyLogger.processing.MultiprocessingLogger.log" class="name">var <span class="ident">log</span></p>
+            
+
+            
+  
+    <div class="desc"><p>The python logging's logger for files only.</p></div>
+  <div class="source_cont">
+</div>
+
+            </div>
+            <div class="item">
+            <p id="FancyLogger.processing.MultiprocessingLogger.longest_bar_prefix_size" class="name">var <span class="ident">longest_bar_prefix_size</span></p>
+            
+
+            
+  
+    <div class="desc"><p>Defines the longest task prefix in order to align progress bars to the left.</p></div>
+  <div class="source_cont">
+</div>
+
+            </div>
+            <div class="item">
+            <p id="FancyLogger.processing.MultiprocessingLogger.messages" class="name">var <span class="ident">messages</span></p>
+            
+
+            
+  
+    <div class="desc"><p>Cycling list of log messages below the progress bars.</p></div>
+  <div class="source_cont">
+</div>
+
+            </div>
+            <div class="item">
+            <p id="FancyLogger.processing.MultiprocessingLogger.os_flush_command" class="name">var <span class="ident">os_flush_command</span></p>
+            
+
+            
+  
+    <div class="desc"><p>The clear command on Unix and cls command on Windows.</p></div>
+  <div class="source_cont">
+</div>
+
+            </div>
+            <div class="item">
+            <p id="FancyLogger.processing.MultiprocessingLogger.permanent_progressbar_slots" class="name">var <span class="ident">permanent_progressbar_slots</span></p>
+            
+
+            
+  
+    <div class="desc"><p>Defines the vertical space (in bar slots) to keep at all times between progress bars section and messages
+section.</p></div>
+  <div class="source_cont">
+</div>
+
+            </div>
+            <div class="item">
+            <p id="FancyLogger.processing.MultiprocessingLogger.queue" class="name">var <span class="ident">queue</span></p>
+            
+
+            
+  
+    <div class="desc"><p>Queue to receive orders from all processes.</p></div>
+  <div class="source_cont">
+</div>
+
+            </div>
+            <div class="item">
+            <p id="FancyLogger.processing.MultiprocessingLogger.redraw_frequency_millis" class="name">var <span class="ident">redraw_frequency_millis</span></p>
+            
+
+            
+  
+    <div class="desc"><p>Defines the minimum time in milliseconds between two redraws. It may be more because the redraw rate depends
+upon time AND method calls.</p></div>
+  <div class="source_cont">
+</div>
+
+            </div>
+            <div class="item">
+            <p id="FancyLogger.processing.MultiprocessingLogger.refresh_timer" class="name">var <span class="ident">refresh_timer</span></p>
+            
+
+            
+  
+    <div class="desc"><p>The redraw timer.</p></div>
+  <div class="source_cont">
+</div>
+
+            </div>
+            <div class="item">
+            <p id="FancyLogger.processing.MultiprocessingLogger.task_millis_to_removal" class="name">var <span class="ident">task_millis_to_removal</span></p>
+            
+
+            
+  
+    <div class="desc"><p>Minimum number of milliseconds at maximum completion before a progress bar is removed from display.
+The progress bar may vanish at a further time as the redraw rate depends upon time AND method calls.</p></div>
+  <div class="source_cont">
+</div>
+
+            </div>
+            <div class="item">
+            <p id="FancyLogger.processing.MultiprocessingLogger.tasks" class="name">var <span class="ident">tasks</span></p>
+            
+
+            
+  
+    <div class="desc"><p>List of tasks identified by an id. One progress bar per task.</p></div>
+  <div class="source_cont">
+</div>
+
+            </div>
+            <div class="item">
+            <p id="FancyLogger.processing.MultiprocessingLogger.to_delete" class="name">var <span class="ident">to_delete</span></p>
+            
+
+            
+  
+    <div class="desc"><p>When a task is marked for deletion, it is added in this list for next redraw to process it.</p></div>
+  <div class="source_cont">
+</div>
+
+            </div>
+          <h3>Static methods</h3>
+            
+  <div class="item">
+    <div class="name def" id="FancyLogger.processing.MultiprocessingLogger.__init__">
+    <p>def <span class="ident">__init__</span>(</p><p>self, queue, message_number, permanent_progressbar_slots, redraw_frequency_millis, level, task_millis_to_removal)</p>
+    </div>
+    
+
+    
+  
+    <div class="desc"><p>Defines the current configuration of the logger and the queue to receive messages from remote processes. Must be
+used one time only.
+:param queue:                       Queue to receive orders from all processes. Must be the same object
+                                    reference as processes that send log messages and progress updates.
+:param message_number:              Number of simultaneously displayed messages below progress bars.
+:param permanent_progressbar_slots: The amount of vertical space (bar slots) to keep at all times,
+                                    so the message logger will not move anymore if the bar number is equal or
+                                    lower than this parameter.
+:param redraw_frequency_millis:     Minimum time lapse in milliseconds between two redraws. It may be
+                                    more because the redraw rate depends upon time AND method calls.
+:param level:                       The logging level (from standard logging module).
+:param task_millis_to_removal:      Minimum time lapse in milliseconds at maximum completion before
+                                    a progress bar is removed from display. The progress bar may vanish at a
+                                    further time as the redraw rate depends upon time AND method calls.</p></div>
+  <div class="source_cont">
+  <p class="source_link"><a href="javascript:void(0);" onclick="toggle('source-FancyLogger.processing.MultiprocessingLogger.__init__', this);">Show source &equiv;</a></p>
+  <div id="source-FancyLogger.processing.MultiprocessingLogger.__init__" class="source">
+    <pre><code>def __init__(self,
+             queue,
+             message_number,
+             permanent_progressbar_slots,
+             redraw_frequency_millis,
+             level,
+             task_millis_to_removal):
+    """
+    Defines the current configuration of the logger and the queue to receive messages from remote processes. Must be
+    used one time only.
+    :param queue:                       Queue to receive orders from all processes. Must be the same object
+                                        reference as processes that send log messages and progress updates.
+    :param message_number:              Number of simultaneously displayed messages below progress bars.
+    :param permanent_progressbar_slots: The amount of vertical space (bar slots) to keep at all times,
+                                        so the message logger will not move anymore if the bar number is equal or
+                                        lower than this parameter.
+    :param redraw_frequency_millis:     Minimum time lapse in milliseconds between two redraws. It may be
+                                        more because the redraw rate depends upon time AND method calls.
+    :param level:                       The logging level (from standard logging module).
+    :param task_millis_to_removal:      Minimum time lapse in milliseconds at maximum completion before
+                                        a progress bar is removed from display. The progress bar may vanish at a
+                                        further time as the redraw rate depends upon time AND method calls.
+    """
+    super(MultiprocessingLogger, self).__init__()
+    self.queue = queue
+    self.set_configuration(SetConfigurationCommand(task_millis_to_removal=task_millis_to_removal,
+                                                   level=level,
+                                                   permanent_progressbar_slots=permanent_progressbar_slots,
+                                                   message_number=message_number,
+                                                   redraw_frequency_millis=redraw_frequency_millis))
+</code></pre>
+  </div>
+</div>
+
+  </div>
+  
+            
+  <div class="item">
+    <div class="name def" id="FancyLogger.processing.MultiprocessingLogger.append_message">
+    <p>def <span class="ident">append_message</span>(</p><p>self, message)</p>
+    </div>
+    
+
+    
+  
+    <div class="desc"><p>Appends the given message at the end of the message list and delete the oldest one (top most).
+:param message: The formatted text to log.</p></div>
+  <div class="source_cont">
+  <p class="source_link"><a href="javascript:void(0);" onclick="toggle('source-FancyLogger.processing.MultiprocessingLogger.append_message', this);">Show source &equiv;</a></p>
+  <div id="source-FancyLogger.processing.MultiprocessingLogger.append_message" class="source">
+    <pre><code>def append_message(self,
+                   message):
+    """
+    Appends the given message at the end of the message list and delete the oldest one (top most).
+    :param message: The formatted text to log.
+    """
+    # Delete the first message of the list
+    del self.messages[0]
+    # Append the new message at the end
+    self.messages.append(message)
+    self.changes_made = True
+    # Redraw
+    self.redraw()
+</code></pre>
+  </div>
+</div>
+
+  </div>
+  
+            
+  <div class="item">
+    <div class="name def" id="FancyLogger.processing.MultiprocessingLogger.critical">
+    <p>def <span class="ident">critical</span>(</p><p>self, command)</p>
+    </div>
+    
+
+    
+  
+    <div class="desc"><p>Posts a critical message adding a timestamp and logging level to it for both file and console handlers.
+Logger uses a redraw rate because of console flickering. That means it will not draw new messages or progress
+at the very time they are being logged but their timestamp will be captured at the right time. Logger will
+redraw at a given time period AND when new messages or progress are logged. If you still want to force redraw
+immediately (may produce flickering) then call 'flush' method.
+:param command: The command object that holds all the necessary information from the remote process.</p></div>
+  <div class="source_cont">
+  <p class="source_link"><a href="javascript:void(0);" onclick="toggle('source-FancyLogger.processing.MultiprocessingLogger.critical', this);">Show source &equiv;</a></p>
+  <div id="source-FancyLogger.processing.MultiprocessingLogger.critical" class="source">
+    <pre><code>def critical(self, command):
+    """
+    Posts a critical message adding a timestamp and logging level to it for both file and console handlers.
+    Logger uses a redraw rate because of console flickering. That means it will not draw new messages or progress
+    at the very time they are being logged but their timestamp will be captured at the right time. Logger will
+    redraw at a given time period AND when new messages or progress are logged. If you still want to force redraw
+    immediately (may produce flickering) then call 'flush' method.
+    :param command: The command object that holds all the necessary information from the remote process.
+    """
+    if (self.level == logging.DEBUG
+            or self.level == logging.INFO
+            or self.level == logging.WARNING
+            or self.level == logging.ERROR
+            or self.level == logging.CRITICAL):
+        message = '{} [{}]\t{}\n'.format(self.current_timestamp(), 'CRITICAL', command.text)
+        self.append_message(message)
+    self.log.critical('\t{}'.format(command.text))
+</code></pre>
+  </div>
+</div>
+
+  </div>
+  
+            
+  <div class="item">
+    <div class="name def" id="FancyLogger.processing.MultiprocessingLogger.current_timestamp">
+    <p>def <span class="ident">current_timestamp</span>(</p><p>)</p>
+    </div>
+    
+
+    
+  
+    <div class="desc"><p>Gets the current timestamp.
+:return: The timestamp string to append to log messages.</p></div>
+  <div class="source_cont">
+  <p class="source_link"><a href="javascript:void(0);" onclick="toggle('source-FancyLogger.processing.MultiprocessingLogger.current_timestamp', this);">Show source &equiv;</a></p>
+  <div id="source-FancyLogger.processing.MultiprocessingLogger.current_timestamp" class="source">
+    <pre><code>@staticmethod
+def current_timestamp():
+    """
+    Gets the current timestamp.
+    :return: The timestamp string to append to log messages.
+    """
+    return time.strftime('%d %B %Y %H:%M:%S').lower()
+</code></pre>
+  </div>
+</div>
+
+  </div>
+  
+            
+  <div class="item">
+    <div class="name def" id="FancyLogger.processing.MultiprocessingLogger.debug">
+    <p>def <span class="ident">debug</span>(</p><p>self, command)</p>
+    </div>
+    
+
+    
+  
+    <div class="desc"><p>Posts a debug message adding a timestamp and logging level to it for both file and console handlers.
+Logger uses a redraw rate because of console flickering. That means it will not draw new messages or progress
+at the very time they are being logged but their timestamp will be captured at the right time. Logger will
+redraw at a given time period AND when new messages or progress are logged. If you still want to force redraw
+immediately (may produce flickering) then call 'flush' method.
+:param command: The command object that holds all the necessary information from the remote process.</p></div>
+  <div class="source_cont">
+  <p class="source_link"><a href="javascript:void(0);" onclick="toggle('source-FancyLogger.processing.MultiprocessingLogger.debug', this);">Show source &equiv;</a></p>
+  <div id="source-FancyLogger.processing.MultiprocessingLogger.debug" class="source">
+    <pre><code>def debug(self, command):
+    """
+    Posts a debug message adding a timestamp and logging level to it for both file and console handlers.
+    Logger uses a redraw rate because of console flickering. That means it will not draw new messages or progress
+    at the very time they are being logged but their timestamp will be captured at the right time. Logger will
+    redraw at a given time period AND when new messages or progress are logged. If you still want to force redraw
+    immediately (may produce flickering) then call 'flush' method.
+    :param command: The command object that holds all the necessary information from the remote process.
+    """
+    if self.level == logging.DEBUG:
+        message = '{} [{}]\t{}\n'.format(self.current_timestamp(), 'DEBUG', command.text)
+        self.append_message(message)
+    self.log.debug('\t{}'.format(command.text))
+</code></pre>
+  </div>
+</div>
+
+  </div>
+  
+            
+  <div class="item">
+    <div class="name def" id="FancyLogger.processing.MultiprocessingLogger.error">
+    <p>def <span class="ident">error</span>(</p><p>self, command)</p>
+    </div>
+    
+
+    
+  
+    <div class="desc"><p>Posts an error message adding a timestamp and logging level to it for both file and console handlers.
+Logger uses a redraw rate because of console flickering. That means it will not draw new messages or progress
+at the very time they are being logged but their timestamp will be captured at the right time. Logger will
+redraw at a given time period AND when new messages or progress are logged. If you still want to force redraw
+immediately (may produce flickering) then call 'flush' method.
+:param command: The command object that holds all the necessary information from the remote process.</p></div>
+  <div class="source_cont">
+  <p class="source_link"><a href="javascript:void(0);" onclick="toggle('source-FancyLogger.processing.MultiprocessingLogger.error', this);">Show source &equiv;</a></p>
+  <div id="source-FancyLogger.processing.MultiprocessingLogger.error" class="source">
+    <pre><code>def error(self, command):
+    """
+    Posts an error message adding a timestamp and logging level to it for both file and console handlers.
+    Logger uses a redraw rate because of console flickering. That means it will not draw new messages or progress
+    at the very time they are being logged but their timestamp will be captured at the right time. Logger will
+    redraw at a given time period AND when new messages or progress are logged. If you still want to force redraw
+    immediately (may produce flickering) then call 'flush' method.
+    :param command: The command object that holds all the necessary information from the remote process.
+    """
+    if (self.level == logging.DEBUG
+            or self.level == logging.INFO
+            or self.level == logging.WARNING
+            or self.level == logging.ERROR):
+        message = '{} [{}]\t{}\n'.format(self.current_timestamp(), 'ERROR', command.text)
+        self.append_message(message)
+    self.log.error('\t{}'.format(command.text))
+</code></pre>
+  </div>
+</div>
+
+  </div>
+  
+            
+  <div class="item">
+    <div class="name def" id="FancyLogger.processing.MultiprocessingLogger.flush">
+    <p>def <span class="ident">flush</span>(</p><p>self)</p>
+    </div>
+    
+
+    
+  
+    <div class="desc"><p>Flushes the remaining messages and progress bars state by forcing redraw. Can be useful if you want to be sure
+that a message or progress has been updated in display at a given moment in code, like when you are exiting an
+application or doing some kind of synchronized operations.</p></div>
+  <div class="source_cont">
+  <p class="source_link"><a href="javascript:void(0);" onclick="toggle('source-FancyLogger.processing.MultiprocessingLogger.flush', this);">Show source &equiv;</a></p>
+  <div id="source-FancyLogger.processing.MultiprocessingLogger.flush" class="source">
+    <pre><code>def flush(self):
+    """
+    Flushes the remaining messages and progress bars state by forcing redraw. Can be useful if you want to be sure
+    that a message or progress has been updated in display at a given moment in code, like when you are exiting an
+    application or doing some kind of synchronized operations.
+    """
+    self.refresh_timer = 0
+    self.changes_made = True
+    self.redraw()
+</code></pre>
+  </div>
+</div>
+
+  </div>
+  
+            
+  <div class="item">
+    <div class="name def" id="FancyLogger.processing.MultiprocessingLogger.info">
+    <p>def <span class="ident">info</span>(</p><p>self, command)</p>
+    </div>
+    
+
+    
+  
+    <div class="desc"><p>Posts an info message adding a timestamp and logging level to it for both file and console handlers.
+Logger uses a redraw rate because of console flickering. That means it will not draw new messages or progress
+at the very time they are being logged but their timestamp will be captured at the right time. Logger will
+redraw at a given time period AND when new messages or progress are logged. If you still want to force redraw
+immediately (may produce flickering) then call 'flush' method.
+:param command: The command object that holds all the necessary information from the remote process.</p></div>
+  <div class="source_cont">
+  <p class="source_link"><a href="javascript:void(0);" onclick="toggle('source-FancyLogger.processing.MultiprocessingLogger.info', this);">Show source &equiv;</a></p>
+  <div id="source-FancyLogger.processing.MultiprocessingLogger.info" class="source">
+    <pre><code>def info(self, command):
+    """
+    Posts an info message adding a timestamp and logging level to it for both file and console handlers.
+    Logger uses a redraw rate because of console flickering. That means it will not draw new messages or progress
+    at the very time they are being logged but their timestamp will be captured at the right time. Logger will
+    redraw at a given time period AND when new messages or progress are logged. If you still want to force redraw
+    immediately (may produce flickering) then call 'flush' method.
+    :param command: The command object that holds all the necessary information from the remote process.
+    """
+    if (self.level == logging.DEBUG
+            or self.level == logging.INFO):
+        message = '{} [{}]\t{}\n'.format(self.current_timestamp(), 'INFO', command.text)
+        self.append_message(message)
+    self.log.info('\t\t{}'.format(command.text))
+</code></pre>
+  </div>
+</div>
+
+  </div>
+  
+            
+  <div class="item">
+    <div class="name def" id="FancyLogger.processing.MultiprocessingLogger.is_alive">
+    <p>def <span class="ident">is_alive</span>(</p><p>self)</p>
+    </div>
+    
+
+    
+  
+    <div class="desc"><p>Return whether process is alive</p></div>
+  <div class="source_cont">
+  <p class="source_link"><a href="javascript:void(0);" onclick="toggle('source-FancyLogger.processing.MultiprocessingLogger.is_alive', this);">Show source &equiv;</a></p>
+  <div id="source-FancyLogger.processing.MultiprocessingLogger.is_alive" class="source">
+    <pre><code>def is_alive(self):
+    '''
+    Return whether process is alive
+    '''
+    if self is _current_process:
+        return True
+    assert self._parent_pid == os.getpid(), 'can only test a child process'
+    if self._popen is None:
+        return False
+    self._popen.poll()
+    return self._popen.returncode is None
+</code></pre>
+  </div>
+</div>
+
+  </div>
+  
+            
+  <div class="item">
+    <div class="name def" id="FancyLogger.processing.MultiprocessingLogger.join">
+    <p>def <span class="ident">join</span>(</p><p>self, timeout=None)</p>
+    </div>
+    
+
+    
+  
+    <div class="desc"><p>Wait until child process terminates</p></div>
+  <div class="source_cont">
+  <p class="source_link"><a href="javascript:void(0);" onclick="toggle('source-FancyLogger.processing.MultiprocessingLogger.join', this);">Show source &equiv;</a></p>
+  <div id="source-FancyLogger.processing.MultiprocessingLogger.join" class="source">
+    <pre><code>def join(self, timeout=None):
+    '''
+    Wait until child process terminates
+    '''
+    assert self._parent_pid == os.getpid(), 'can only join a child process'
+    assert self._popen is not None, 'can only join a started process'
+    res = self._popen.wait(timeout)
+    if res is not None:
+        _children.discard(self)
+</code></pre>
+  </div>
+</div>
+
+  </div>
+  
+            
+  <div class="item">
+    <div class="name def" id="FancyLogger.processing.MultiprocessingLogger.longest_bar_prefix_value">
+    <p>def <span class="ident">longest_bar_prefix_value</span>(</p><p>self)</p>
+    </div>
+    
+
+    
+  
+    <div class="desc"><p>Calculates the longest progress bar prefix in order to keep all progress bars left-aligned.
+:return: Length of the longest task prefix in character unit.</p></div>
+  <div class="source_cont">
+  <p class="source_link"><a href="javascript:void(0);" onclick="toggle('source-FancyLogger.processing.MultiprocessingLogger.longest_bar_prefix_value', this);">Show source &equiv;</a></p>
+  <div id="source-FancyLogger.processing.MultiprocessingLogger.longest_bar_prefix_value" class="source">
+    <pre><code>def longest_bar_prefix_value(self):
+    """
+    Calculates the longest progress bar prefix in order to keep all progress bars left-aligned.
+    :return: Length of the longest task prefix in character unit.
+    """
+    longest = 0
+    for key, t in self.tasks.items():
+        size = len(t.prefix)
+        if size > longest:
+            longest = size
+    return longest
+</code></pre>
+  </div>
+</div>
+
+  </div>
+  
+            
+  <div class="item">
+    <div class="name def" id="FancyLogger.processing.MultiprocessingLogger.millis_to_human_readable">
+    <p>def <span class="ident">millis_to_human_readable</span>(</p><p>time_millis)</p>
+    </div>
+    
+
+    
+  
+    <div class="desc"><p>Calculates the equivalent time of the given milliseconds into a human readable string from seconds to weeks.
+:param time_millis: Time in milliseconds using python time library.
+:return:            Human readable time string. Example: 2 min 3 s.</p></div>
+  <div class="source_cont">
+  <p class="source_link"><a href="javascript:void(0);" onclick="toggle('source-FancyLogger.processing.MultiprocessingLogger.millis_to_human_readable', this);">Show source &equiv;</a></p>
+  <div id="source-FancyLogger.processing.MultiprocessingLogger.millis_to_human_readable" class="source">
+    <pre><code>@staticmethod
+def millis_to_human_readable(time_millis):
+    """
+    Calculates the equivalent time of the given milliseconds into a human readable string from seconds to weeks.
+    :param time_millis: Time in milliseconds using python time library.
+    :return:            Human readable time string. Example: 2 min 3 s.
+    """
+    weeks = 0
+    days = 0
+    hours = 0
+    minutes = 0
+    seconds = round(time_millis / 1000)
+    while seconds > 59:
+        seconds -= 60
+        minutes += 1
+    while minutes > 59:
+        minutes -= 60
+        hours += 1
+    while hours > 23:
+        hours -= 24
+        days += 1
+    while days > 6:
+        hours -= 7
+        weeks += 1
+    if weeks > 0:
+        output = '{} w {} d {} h {} min {} s'.format(weeks, days, hours, minutes, seconds)
+    elif days > 0:
+        output = '{} d {} h {} min {} s'.format(days, hours, minutes, seconds)
+    elif hours > 0:
+        output = '{} h {} min {} s'.format(hours, minutes, seconds)
+    elif minutes > 0:
+        output = '{} min {} s'.format(minutes, seconds)
+    elif seconds > 0:
+        output = '{} s'.format(seconds)
+    else:
+        output = ''
+    return output
+</code></pre>
+  </div>
+</div>
+
+  </div>
+  
+            
+  <div class="item">
+    <div class="name def" id="FancyLogger.processing.MultiprocessingLogger.print_progress_bar">
+    <p>def <span class="ident">print_progress_bar</span>(</p><p>self, task)</p>
+    </div>
+    
+
+    
+  
+    <div class="desc"><p>Draws a progress bar on screen based on the given information using standard output (stdout).
+:param task: TaskProgress object containing all required information to draw a progress bar at the given state.</p></div>
+  <div class="source_cont">
+  <p class="source_link"><a href="javascript:void(0);" onclick="toggle('source-FancyLogger.processing.MultiprocessingLogger.print_progress_bar', this);">Show source &equiv;</a></p>
+  <div id="source-FancyLogger.processing.MultiprocessingLogger.print_progress_bar" class="source">
+    <pre><code>def print_progress_bar(self, task):
+    """
+    Draws a progress bar on screen based on the given information using standard output (stdout).
+    :param task: TaskProgress object containing all required information to draw a progress bar at the given state.
+    """
+    str_format = "{0:." + str(task.decimals) + "f}"
+    percents = str_format.format(100 * (task.progress / float(task.total)))
+    filled_length = int(round(task.bar_length * task.progress / float(task.total)))
+    bar = '█' * filled_length + '-' * (task.bar_length - filled_length)
+    # Build elapsed time if needed
+    elapsed_time = None
+    if task.display_time:
+        if task.end_time:
+            # If the task has ended, stop the chrono
+            if not task.elapsed_time_at_end:
+                task.elapsed_time_at_end = self.millis_to_human_readable(task.end_time - task.begin_time)
+            elapsed_time = task.elapsed_time_at_end
+        else:
+            # If task is new then start the chrono
+            if not task.begin_time:
+                task.begin_time = millis()
+            elapsed_time = self.millis_to_human_readable(millis() - task.begin_time)
+    prefix_pattern = '%{}s'.format(self.longest_bar_prefix_size)
+    time_container_pattern = '(%s)' if task.display_time and not task.end_time else '[%s]'
+    if len(task.suffix) > 0 and task.display_time:
+        sys.stdout.write('\n {} |%s| %3s %% {} - %s'.format(prefix_pattern, time_container_pattern)
+                         % (task.prefix, bar, percents, elapsed_time, task.suffix))
+    elif len(task.suffix) > 0 and not task.display_time:
+        sys.stdout.write('\n {} |%s| %3s %% - %s'.format(prefix_pattern)
+                         % (task.prefix, bar, percents, task.suffix))
+    elif task.display_time and not len(task.suffix) > 0:
+        sys.stdout.write('\n {} |%s| %3s %% {}'.format(prefix_pattern, time_container_pattern)
+                         % (task.prefix, bar, percents, elapsed_time))
+    else:
+        sys.stdout.write('\n {} |%s| %3s %%'.format(prefix_pattern)
+                         % (task.prefix, bar, percents))
+    sys.stdout.write('\n')
+    sys.stdout.flush()
+</code></pre>
+  </div>
+</div>
+
+  </div>
+  
+            
+  <div class="item">
+    <div class="name def" id="FancyLogger.processing.MultiprocessingLogger.redraw">
+    <p>def <span class="ident">redraw</span>(</p><p>self)</p>
+    </div>
+    
+
+    
+  
+    <div class="desc"><p>Clears the console and performs a complete redraw of all progress bars and then awaiting logger messages if the
+minimum time elapsed since the last redraw is enough.</p></div>
+  <div class="source_cont">
+  <p class="source_link"><a href="javascript:void(0);" onclick="toggle('source-FancyLogger.processing.MultiprocessingLogger.redraw', this);">Show source &equiv;</a></p>
+  <div id="source-FancyLogger.processing.MultiprocessingLogger.redraw" class="source">
+    <pre><code>def redraw(self):
+    """
+    Clears the console and performs a complete redraw of all progress bars and then awaiting logger messages if the
+    minimum time elapsed since the last redraw is enough.
+    """
+    # Check if the refresh time lapse has elapsed and if a change requires to redraw
+    lapse_since_last_refresh = millis() - self.refresh_timer
+    if not lapse_since_last_refresh > self.redraw_frequency_millis or not self.changes_made:
+        return
+    # If yes, then reset change indicator and chrono
+    self.changes_made = False
+    self.refresh_timer = millis()
+    # Clear the system console
+    os.system(self.os_flush_command)
+    # For each task, check if it has complete. If so, start its chrono
+    # Once the chrono has reached the maximum timeout time, delete the task
+    # For the other tasks that have not completed yet, redraw them
+    # Delete tasks that have been marked for deletion
+    if len(self.to_delete) > 0:
+        for task_id in self.to_delete:
+            del self.tasks[task_id]
+        self.to_delete = []
+        # If a task has been deleted, recalculate the maximum prefix length to keep progress bars aligned
+        self.longest_bar_prefix_size = self.longest_bar_prefix_value()
+    for task_id, task in self.tasks.items():
+        # If a task has completed, force its value to its maximum to prevent progress bar overflow
+        # Then start its timeout chrono
+        if task.progress >= task.total and not task.keep_alive:
+            # Prevent bar overflow
+            task.progress = task.total
+            # Start task's timeout chrono
+            if not task.timeout_chrono:
+                task.timeout_chrono = millis()
+            # If task's chrono has reached the maximum timeout time, mark it for deletion
+            elif millis() - task.timeout_chrono >= self.task_millis_to_removal:
+                self.to_delete.append(task_id)
+        # Redraw the task's progress bar
+        self.print_progress_bar(task=task)
+    # Keep space for future tasks if needed
+    slots = self.permanent_progressbar_slots - len(self.tasks)
+    if slots > 0:
+        for i in range(slots):
+            sys.stdout.write('\n\t\t---\n')
+    # Draw some space between bars and messages
+    if self.permanent_progressbar_slots > 0 or len(self.tasks) > 0:
+        sys.stdout.write('\n\n')
+    # Print all the last log messages
+    for m in self.messages:
+        sys.stdout.write(m)
+</code></pre>
+  </div>
+</div>
+
+  </div>
+  
+            
+  <div class="item">
+    <div class="name def" id="FancyLogger.processing.MultiprocessingLogger.run">
+    <p>def <span class="ident">run</span>(</p><p>self)</p>
+    </div>
+    
+
+    
+  
+    <div class="desc"><p>The main loop for the logger process. Will receive remote processes orders one by one and wait for the next one.
+Then return from this method when the main application calls for exit, which is a regular command.</p></div>
+  <div class="source_cont">
+  <p class="source_link"><a href="javascript:void(0);" onclick="toggle('source-FancyLogger.processing.MultiprocessingLogger.run', this);">Show source &equiv;</a></p>
+  <div id="source-FancyLogger.processing.MultiprocessingLogger.run" class="source">
+    <pre><code>def run(self):
+    """
+    The main loop for the logger process. Will receive remote processes orders one by one and wait for the next one.
+    Then return from this method when the main application calls for exit, which is a regular command.
+    """
+    # Initialize the logging.log
+    self.log = getLogger()
+    file_handler = RotatingFileHandler('logging.log',
+                                       maxBytes=10485760,  # 10 MB
+                                       backupCount=5)
+    file_handler.setFormatter(Formatter('%(asctime)s [%(levelname)s] %(message)s'))
+    self.log.addHandler(file_handler)
+    self.log.setLevel(logging.INFO)
+    while True:
+        o = dill.loads(self.queue.get())
+        if isinstance(o, LogMessageCommand):
+            if o.level == logging.DEBUG:
+                self.debug(command=o)
+            elif o.level == logging.INFO:
+                self.info(command=o)
+            elif o.level == logging.WARNING:
+                self.warning(command=o)
+            elif o.level == logging.ERROR:
+                self.error(command=o)
+            elif o.level == logging.CRITICAL:
+                self.critical(command=o)
+        elif isinstance(o, UpdateProgressCommand):
+            self.update(command=o)
+        elif isinstance(o, NewTaskCommand):
+            self.set_task(command=o)
+        elif isinstance(o, FlushCommand):
+            self.flush()
+        elif isinstance(o, SetConfigurationCommand):
+            self.set_configuration(command=o)
+        elif isinstance(o, ExitCommand):
+            return
+        elif isinstance(o, SetLevelCommand):
+            self.set_level(command=o)
+</code></pre>
+  </div>
+</div>
+
+  </div>
+  
+            
+  <div class="item">
+    <div class="name def" id="FancyLogger.processing.MultiprocessingLogger.set_configuration">
+    <p>def <span class="ident">set_configuration</span>(</p><p>self, command)</p>
+    </div>
+    
+
+    
+  
+    <div class="desc"><p>Defines the current configuration of the logger. Can be used at any moment during runtime to modify the logger
+behavior.
+:param command: The command object that holds all the necessary information from the remote process.</p></div>
+  <div class="source_cont">
+  <p class="source_link"><a href="javascript:void(0);" onclick="toggle('source-FancyLogger.processing.MultiprocessingLogger.set_configuration', this);">Show source &equiv;</a></p>
+  <div id="source-FancyLogger.processing.MultiprocessingLogger.set_configuration" class="source">
+    <pre><code>def set_configuration(self, command):
+    """
+    Defines the current configuration of the logger. Can be used at any moment during runtime to modify the logger
+    behavior.
+    :param command: The command object that holds all the necessary information from the remote process.
+    """
+    self.permanent_progressbar_slots = command.permanent_progressbar_slots
+    self.redraw_frequency_millis = command.redraw_frequency_millis
+    self.level = command.level
+    self.task_millis_to_removal = command.task_millis_to_removal
+    # If messages already exists
+    if self.messages:
+        current_length = len(self.messages)
+        if command.message_number < current_length:
+            # Delete messages from 0 to desired index to keep most recent messages
+            range_to_delete = current_length - command.message_number
+            for i in range(range_to_delete):
+                del self.messages[0]
+        elif command.message_number > current_length:
+            # Add empty slots at 0
+            range_to_add = command.message_number - current_length
+            for i in range(range_to_add):
+                self.messages.insert(0, '')
+    else:
+        # Else, initialize a new list
+        self.messages = command.message_number * ['']
+</code></pre>
+  </div>
+</div>
+
+  </div>
+  
+            
+  <div class="item">
+    <div class="name def" id="FancyLogger.processing.MultiprocessingLogger.set_level">
+    <p>def <span class="ident">set_level</span>(</p><p>self, command)</p>
+    </div>
+    
+
+    
+  
+    <div class="desc"><p>Defines the logging level (from standard logging module) for log messages.
+:param command: The command object that holds all the necessary information from the remote process.</p></div>
+  <div class="source_cont">
+  <p class="source_link"><a href="javascript:void(0);" onclick="toggle('source-FancyLogger.processing.MultiprocessingLogger.set_level', this);">Show source &equiv;</a></p>
+  <div id="source-FancyLogger.processing.MultiprocessingLogger.set_level" class="source">
+    <pre><code>def set_level(self, command):
+    """
+    Defines the logging level (from standard logging module) for log messages.
+    :param command: The command object that holds all the necessary information from the remote process.
+    """
+    if not command.console_only:
+        self.log.setLevel(command.level)
+    self.level = command.level
+</code></pre>
+  </div>
+</div>
+
+  </div>
+  
+            
+  <div class="item">
+    <div class="name def" id="FancyLogger.processing.MultiprocessingLogger.set_task">
+    <p>def <span class="ident">set_task</span>(</p><p>self, command)</p>
+    </div>
+    
+
+    
+  
+    <div class="desc"><p>Defines a new progress bar with the given information.
+:param command: The command object that holds all the necessary information from the remote process.</p></div>
+  <div class="source_cont">
+  <p class="source_link"><a href="javascript:void(0);" onclick="toggle('source-FancyLogger.processing.MultiprocessingLogger.set_task', this);">Show source &equiv;</a></p>
+  <div id="source-FancyLogger.processing.MultiprocessingLogger.set_task" class="source">
+    <pre><code>def set_task(self, command):
+    """
+    Defines a new progress bar with the given information.
+    :param command: The command object that holds all the necessary information from the remote process.
+    """
+    self.tasks[command.task_id] = command.task
+    self.longest_bar_prefix_size = self.longest_bar_prefix_value()
+    self.changes_made = True
+</code></pre>
+  </div>
+</div>
+
+  </div>
+  
+            
+  <div class="item">
+    <div class="name def" id="FancyLogger.processing.MultiprocessingLogger.start">
+    <p>def <span class="ident">start</span>(</p><p>self)</p>
+    </div>
+    
+
+    
+  
+    <div class="desc"><p>Start child process</p></div>
+  <div class="source_cont">
+  <p class="source_link"><a href="javascript:void(0);" onclick="toggle('source-FancyLogger.processing.MultiprocessingLogger.start', this);">Show source &equiv;</a></p>
+  <div id="source-FancyLogger.processing.MultiprocessingLogger.start" class="source">
+    <pre><code>def start(self):
+    '''
+    Start child process
+    '''
+    assert self._popen is None, 'cannot start a process twice'
+    assert self._parent_pid == os.getpid(), \
+           'can only start a process object created by current process'
+    assert not _current_process._config.get('daemon'), \
+           'daemonic processes are not allowed to have children'
+    _cleanup()
+    self._popen = self._Popen(self)
+    self._sentinel = self._popen.sentinel
+    _children.add(self)
+</code></pre>
+  </div>
+</div>
+
+  </div>
+  
+            
+  <div class="item">
+    <div class="name def" id="FancyLogger.processing.MultiprocessingLogger.terminate">
+    <p>def <span class="ident">terminate</span>(</p><p>self)</p>
+    </div>
+    
+
+    
+  
+    <div class="desc"><p>Terminate process; sends SIGTERM signal or uses TerminateProcess()</p></div>
+  <div class="source_cont">
+  <p class="source_link"><a href="javascript:void(0);" onclick="toggle('source-FancyLogger.processing.MultiprocessingLogger.terminate', this);">Show source &equiv;</a></p>
+  <div id="source-FancyLogger.processing.MultiprocessingLogger.terminate" class="source">
+    <pre><code>def terminate(self):
+    '''
+    Terminate process; sends SIGTERM signal or uses TerminateProcess()
+    '''
+    self._popen.terminate()
+</code></pre>
+  </div>
+</div>
+
+  </div>
+  
+            
+  <div class="item">
+    <div class="name def" id="FancyLogger.processing.MultiprocessingLogger.update">
+    <p>def <span class="ident">update</span>(</p><p>self, command)</p>
+    </div>
+    
+
+    
+  
+    <div class="desc"><p>Defines the current progress for this progress bar id in iteration units (not percent).
+If the given id does not exist or the given progress is identical to the current, then does nothing.
+Logger uses a redraw rate because of console flickering. That means it will not draw new messages or progress
+at the very time they are being logged but their timestamp will be captured at the right time. Logger will
+redraw at a given time period AND when new messages or progress are logged. If you still want to force redraw
+immediately (may produce flickering) then call 'flush' method.
+:param command: The command object that holds all the necessary information from the remote process.</p></div>
+  <div class="source_cont">
+  <p class="source_link"><a href="javascript:void(0);" onclick="toggle('source-FancyLogger.processing.MultiprocessingLogger.update', this);">Show source &equiv;</a></p>
+  <div id="source-FancyLogger.processing.MultiprocessingLogger.update" class="source">
+    <pre><code>def update(self, command):
+    """
+    Defines the current progress for this progress bar id in iteration units (not percent).
+    If the given id does not exist or the given progress is identical to the current, then does nothing.
+    Logger uses a redraw rate because of console flickering. That means it will not draw new messages or progress
+    at the very time they are being logged but their timestamp will be captured at the right time. Logger will
+    redraw at a given time period AND when new messages or progress are logged. If you still want to force redraw
+    immediately (may produce flickering) then call 'flush' method.
+    :param command: The command object that holds all the necessary information from the remote process.
+    """
+    if command.task_id in self.tasks and self.tasks[command.task_id].set_progress(command.progress):
+        self.changes_made = True
+        # Redraw
+        self.redraw()
+</code></pre>
+  </div>
+</div>
+
+  </div>
+  
+            
+  <div class="item">
+    <div class="name def" id="FancyLogger.processing.MultiprocessingLogger.warning">
+    <p>def <span class="ident">warning</span>(</p><p>self, command)</p>
+    </div>
+    
+
+    
+  
+    <div class="desc"><p>Posts a warning message adding a timestamp and logging level to it for both file and console handlers.
+Logger uses a redraw rate because of console flickering. That means it will not draw new messages or progress
+at the very time they are being logged but their timestamp will be captured at the right time. Logger will
+redraw at a given time period AND when new messages or progress are logged. If you still want to force redraw
+immediately (may produce flickering) then call 'flush' method.
+:param command: The command object that holds all the necessary information from the remote process.</p></div>
+  <div class="source_cont">
+  <p class="source_link"><a href="javascript:void(0);" onclick="toggle('source-FancyLogger.processing.MultiprocessingLogger.warning', this);">Show source &equiv;</a></p>
+  <div id="source-FancyLogger.processing.MultiprocessingLogger.warning" class="source">
+    <pre><code>def warning(self, command):
+    """
+    Posts a warning message adding a timestamp and logging level to it for both file and console handlers.
+    Logger uses a redraw rate because of console flickering. That means it will not draw new messages or progress
+    at the very time they are being logged but their timestamp will be captured at the right time. Logger will
+    redraw at a given time period AND when new messages or progress are logged. If you still want to force redraw
+    immediately (may produce flickering) then call 'flush' method.
+    :param command: The command object that holds all the necessary information from the remote process.
+    """
+    if (self.level == logging.DEBUG
+            or self.level == logging.INFO
+            or self.level == logging.WARNING):
+        message = '{} [{}]\t{}\n'.format(self.current_timestamp(), 'WARNING', command.text)
+        self.append_message(message)
+    self.log.warning('\t{}'.format(command.text))
+</code></pre>
+  </div>
+</div>
+
+  </div>
+  
+          <h3>Instance variables</h3>
+            <div class="item">
+            <p id="FancyLogger.processing.MultiprocessingLogger.authkey" class="name">var <span class="ident">authkey</span></p>
+            
+
+            
+  
+  <div class="source_cont">
+</div>
+
+            </div>
+            <div class="item">
+            <p id="FancyLogger.processing.MultiprocessingLogger.daemon" class="name">var <span class="ident">daemon</span></p>
+            
+
+            
+  
+    <div class="desc"><p>Return whether process is a daemon</p></div>
+  <div class="source_cont">
+</div>
+
+            </div>
+            <div class="item">
+            <p id="FancyLogger.processing.MultiprocessingLogger.exitcode" class="name">var <span class="ident">exitcode</span></p>
+            
+
+            
+  
+    <div class="desc"><p>Return exit code of process or <code>None</code> if it has yet to stop</p></div>
+  <div class="source_cont">
+</div>
+
+            </div>
+            <div class="item">
+            <p id="FancyLogger.processing.MultiprocessingLogger.ident" class="name">var <span class="ident">ident</span></p>
+            
+
+            
+  
+    <div class="desc"><p>Return identifier (PID) of process or <code>None</code> if it has yet to start</p></div>
+  <div class="source_cont">
+</div>
+
+            </div>
+            <div class="item">
+            <p id="FancyLogger.processing.MultiprocessingLogger.name" class="name">var <span class="ident">name</span></p>
+            
+
+            
+  
+  <div class="source_cont">
+</div>
+
+            </div>
+            <div class="item">
+            <p id="FancyLogger.processing.MultiprocessingLogger.pid" class="name">var <span class="ident">pid</span></p>
+            
+
+            
+  
+    <div class="desc"><p>Return identifier (PID) of process or <code>None</code> if it has yet to start</p></div>
+  <div class="source_cont">
+</div>
+
+            </div>
+            <div class="item">
+            <p id="FancyLogger.processing.MultiprocessingLogger.queue" class="name">var <span class="ident">queue</span></p>
+            
+
+            
+  
+  <div class="source_cont">
+</div>
+
+            </div>
+            <div class="item">
+            <p id="FancyLogger.processing.MultiprocessingLogger.sentinel" class="name">var <span class="ident">sentinel</span></p>
+            
+
+            
+  
+    <div class="desc"><p>Return a file descriptor (Unix) or handle (Windows) suitable for
+waiting for process termination.</p></div>
+  <div class="source_cont">
+</div>
+
+            </div>
+      </div>
+      </div>
+
+  </section>
+
+    </article>
+  <div class="clear"> </div>
+  <footer id="footer">
+    <p>
+      Documentation generated by
+      <a href="https://github.com/BurntSushi/pdoc">pdoc 0.3.2</a>
+    </p>
+
+    <p>pdoc is in the public domain with the
+      <a href="http://unlicense.org">UNLICENSE</a></p>
+
+    <p>Design by <a href="http://nadh.in">Kailash Nadh</a></p>
+  </footer>
+</div>
+</body>
+</html>
