@@ -5,6 +5,7 @@ import logging
 import time
 import uuid
 import dill
+import os
 from multiprocessing import Queue
 
 from .commands import *
@@ -99,6 +100,8 @@ class FancyLogger(object):
 
     default_message_number = 20
     "Default value for the logger configuration."
+    default_exception_number = 5
+    "Default value for the logger configuration."
     default_permanent_progressbar_slots = 0
     "Default value for the logger configuration."
     default_redraw_frequency_millis = 500
@@ -110,6 +113,7 @@ class FancyLogger(object):
 
     def __init__(self,
                  message_number=default_message_number,
+                 exception_number=default_exception_number,
                  permanent_progressbar_slots=default_permanent_progressbar_slots,
                  redraw_frequency_millis=default_redraw_frequency_millis,
                  level=default_level,
@@ -117,6 +121,7 @@ class FancyLogger(object):
         """
         Initializes a new logger and starts its process immediately using given configuration.
         :param message_number:              [Optional] Number of simultaneously displayed messages below progress bars.
+        :param exception_number:            [Optional] Number of simultaneously displayed exceptions below messages.
         :param permanent_progressbar_slots: [Optional] The amount of vertical space (bar slots) to keep at all times,
                                             so the message logger will not move anymore if the bar number is equal or
                                             lower than this parameter.
@@ -134,6 +139,7 @@ class FancyLogger(object):
             self.process = MultiprocessingLogger(queue=self.queue,
                                                  level=level,
                                                  message_number=message_number,
+                                                 exception_number=exception_number,
                                                  permanent_progressbar_slots=permanent_progressbar_slots,
                                                  redraw_frequency_millis=redraw_frequency_millis,
                                                  task_millis_to_removal=task_millis_to_removal)
@@ -159,6 +165,7 @@ class FancyLogger(object):
 
     def set_configuration(self,
                           message_number=default_message_number,
+                          exception_number=default_exception_number,
                           permanent_progressbar_slots=default_permanent_progressbar_slots,
                           redraw_frequency_millis=default_redraw_frequency_millis,
                           level=default_level,
@@ -167,6 +174,7 @@ class FancyLogger(object):
         Defines the current configuration of the logger. Can be used at any moment during runtime to modify the logger
         behavior.
         :param message_number:              [Optional] Number of simultaneously displayed messages below progress bars.
+        :param exception_number:            [Optional] Number of simultaneously displayed exceptions below messages.
         :param permanent_progressbar_slots: [Optional] The amount of vertical space (bar slots) to keep at all times,
                                             so the message logger will not move anymore if the bar number is equal or
                                             lower than this parameter.
@@ -181,6 +189,7 @@ class FancyLogger(object):
                                                           level=level,
                                                           permanent_progressbar_slots=permanent_progressbar_slots,
                                                           message_number=message_number,
+                                                          exception_number=exception_number,
                                                           redraw_frequency_millis=redraw_frequency_millis)))
 
     def set_level(self,
@@ -314,6 +323,14 @@ class FancyLogger(object):
         :param text: The text to log into file and console.
         """
         self.queue.put(dill.dumps(LogMessageCommand(text=text, level=logging.CRITICAL)))
+
+    def throw(self, stacktrace):
+        """
+        Sends an exception to the logger so it can display it as a special message. Prevents console refresh cycles from
+        hiding exceptions that could be thrown by processes.
+        :param stacktrace: Stacktrace string as returned by 'traceback.format_exc()' in an 'except' block.
+        """
+        self.queue.put(dill.dumps(StacktraceCommand(pid=os.getpid(), stacktrace=stacktrace)))
 
     # --------------------------------------------------------------------
     # Iterator implementation

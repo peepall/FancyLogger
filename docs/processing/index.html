@@ -986,6 +986,7 @@ table {
           
   <ul>
     <li class="mono"><a href="#FancyLogger.processing.MultiprocessingLogger.__init__">__init__</a></li>
+    <li class="mono"><a href="#FancyLogger.processing.MultiprocessingLogger.append_exception">append_exception</a></li>
     <li class="mono"><a href="#FancyLogger.processing.MultiprocessingLogger.append_message">append_message</a></li>
     <li class="mono"><a href="#FancyLogger.processing.MultiprocessingLogger.critical">critical</a></li>
     <li class="mono"><a href="#FancyLogger.processing.MultiprocessingLogger.current_timestamp">current_timestamp</a></li>
@@ -1005,6 +1006,7 @@ table {
     <li class="mono"><a href="#FancyLogger.processing.MultiprocessingLogger.set_task">set_task</a></li>
     <li class="mono"><a href="#FancyLogger.processing.MultiprocessingLogger.start">start</a></li>
     <li class="mono"><a href="#FancyLogger.processing.MultiprocessingLogger.terminate">terminate</a></li>
+    <li class="mono"><a href="#FancyLogger.processing.MultiprocessingLogger.throw">throw</a></li>
     <li class="mono"><a href="#FancyLogger.processing.MultiprocessingLogger.update">update</a></li>
     <li class="mono"><a href="#FancyLogger.processing.MultiprocessingLogger.warning">warning</a></li>
   </ul>
@@ -1077,6 +1079,11 @@ class MultiprocessingLogger(Process):
     "List of tasks identified by an id. One progress bar per task."
     to_delete = []
     "When a task is marked for deletion, it is added in this list for next redraw to process it."
+    exceptions = None
+    """
+    When a process sends an exception to the logger, the stacktrace will be permanently displayed below log messages."
+    So the user can see that a process has failed even if the console is refreshing.
+    """
 
     # ------------- Customizable parameters
     messages = None
@@ -1103,6 +1110,7 @@ class MultiprocessingLogger(Process):
     def __init__(self,
                  queue,
                  message_number,
+                 exception_number,
                  permanent_progressbar_slots,
                  redraw_frequency_millis,
                  level,
@@ -1113,6 +1121,7 @@ class MultiprocessingLogger(Process):
         :param queue:                       Queue to receive orders from all processes. Must be the same object
                                             reference as processes that send log messages and progress updates.
         :param message_number:              Number of simultaneously displayed messages below progress bars.
+        :param exception_number:            Number of simultaneously displayed exceptions below messages.
         :param permanent_progressbar_slots: The amount of vertical space (bar slots) to keep at all times,
                                             so the message logger will not move anymore if the bar number is equal or
                                             lower than this parameter.
@@ -1131,6 +1140,7 @@ class MultiprocessingLogger(Process):
                                                        level=level,
                                                        permanent_progressbar_slots=permanent_progressbar_slots,
                                                        message_number=message_number,
+                                                       exception_number=exception_number,
                                                        redraw_frequency_millis=redraw_frequency_millis))
 
     def set_configuration(self, command):
@@ -1144,8 +1154,29 @@ class MultiprocessingLogger(Process):
         self.level = command.level
         self.task_millis_to_removal = command.task_millis_to_removal
 
-        # If messages already exists
+        # Do not clear exceptions if the user changes the configuration during runtime
+        if self.exceptions:
+            # If exceptions already exists
+            current_length = len(self.exceptions)
+
+            if command.exception_number < current_length:
+                # Delete exceptions from the end to desired index to keep most recent exceptions
+                range_to_delete = current_length - command.exception_number
+                for i in range(range_to_delete):
+                    del self.exceptions[-1]
+
+            elif command.exception_number > current_length:
+                # Add empty slots at the end
+                range_to_add = command.exception_number - current_length
+                for i in range(range_to_add):
+                    self.exceptions.append('')
+        else:
+            # Else, initialize a new list
+            self.exceptions = command.exception_number * ['']
+
+        # Do not clear messages if the user changes the configuration during runtime
         if self.messages:
+            # If messages already exists
             current_length = len(self.messages)
 
             if command.message_number < current_length:
@@ -1203,6 +1234,9 @@ class MultiprocessingLogger(Process):
 
             elif isinstance(o, FlushCommand):
                 self.flush()
+
+            elif isinstance(o, StacktraceCommand):
+                self.throw(command=o)
 
             elif isinstance(o, SetConfigurationCommand):
                 self.set_configuration(command=o)
@@ -1368,12 +1402,22 @@ class MultiprocessingLogger(Process):
                 sys.stdout.write('\n\t\t---\n')
 
         # Draw some space between bars and messages
-        if self.permanent_progressbar_slots > 0 or len(self.tasks) > 0:
-            sys.stdout.write('\n\n')
+        if len(self.messages) > 0:
+            if self.permanent_progressbar_slots > 0 or len(self.tasks) > 0:
+                sys.stdout.write('\n\n')
 
-        # Print all the last log messages
-        for m in self.messages:
-            sys.stdout.write(m)
+            # Print all the last log messages
+            for m in self.messages:
+                sys.stdout.write(m)
+
+        # Draw some space between messages and exceptions
+        if len(self.exceptions) > 0:
+            if len(self.messages) > 0:
+                sys.stdout.write('\n\n')
+
+            # Print all the exceptions
+            for ex in self.exceptions:
+                sys.stdout.write(ex)
 
     def append_message(self,
                        message):
@@ -1382,7 +1426,8 @@ class MultiprocessingLogger(Process):
         :param message: The formatted text to log.
         """
         # Delete the first message of the list
-        del self.messages[0]
+        if len(self.messages) > 0:
+            del self.messages[0]
 
         # Append the new message at the end
         self.messages.append(message)
@@ -1391,11 +1436,28 @@ class MultiprocessingLogger(Process):
         # Redraw
         self.redraw()
 
+    def append_exception(self,
+                         stacktrace):
+        """
+        Appends the given exception at the top of the exception list and delete the oldest one (bottom most).
+        :param stacktrace: Stacktrace string as returned by 'traceback.format_exc()' in an 'except' block.
+        """
+        # Delete the last message of the list
+        if len(self.exceptions) > 0:
+            del self.exceptions[-1]
+
+        # Append the new message at the top
+        self.exceptions.insert(0, stacktrace)
+        self.changes_made = True
+
+        # Redraw
+        self.redraw()
+
     def flush(self):
         """
-        Flushes the remaining messages and progress bars state by forcing redraw. Can be useful if you want to be sure
-        that a message or progress has been updated in display at a given moment in code, like when you are exiting an
-        application or doing some kind of synchronized operations.
+        Flushes the remaining messages, exceptions and progress bars state by forcing redraw. Can be useful if you want
+        to be sure that a message or progress has been updated in display at a given moment in code, like when you are
+        exiting an application or doing some kind of synchronized operations.
         """
         self.refresh_timer = 0
         self.changes_made = True
@@ -1535,6 +1597,16 @@ class MultiprocessingLogger(Process):
             self.append_message(message)
 
         self.log.critical('\t{}'.format(command.text))
+
+    def throw(self, command):
+        """
+        Posts an exception's stacktrace string as returned by 'traceback.format_exc()' in an 'except' block.
+        :param command: The command object that holds all the necessary information from the remote process.
+        """
+        message = '{} [{}]\t[Process {}]:\n{}\n'.format(self.current_timestamp(), 'EXCEPTION', command.pid, command.stacktrace)
+        self.append_exception(message)
+
+        self.log.critical('\t{}'.format(message))
 </code></pre>
   </div>
 
@@ -1605,6 +1677,11 @@ rendering on the screen. Handles the file logger.</p></div>
     "List of tasks identified by an id. One progress bar per task."
     to_delete = []
     "When a task is marked for deletion, it is added in this list for next redraw to process it."
+    exceptions = None
+    """
+    When a process sends an exception to the logger, the stacktrace will be permanently displayed below log messages."
+    So the user can see that a process has failed even if the console is refreshing.
+    """
 
     # ------------- Customizable parameters
     messages = None
@@ -1631,6 +1708,7 @@ rendering on the screen. Handles the file logger.</p></div>
     def __init__(self,
                  queue,
                  message_number,
+                 exception_number,
                  permanent_progressbar_slots,
                  redraw_frequency_millis,
                  level,
@@ -1641,6 +1719,7 @@ rendering on the screen. Handles the file logger.</p></div>
         :param queue:                       Queue to receive orders from all processes. Must be the same object
                                             reference as processes that send log messages and progress updates.
         :param message_number:              Number of simultaneously displayed messages below progress bars.
+        :param exception_number:            Number of simultaneously displayed exceptions below messages.
         :param permanent_progressbar_slots: The amount of vertical space (bar slots) to keep at all times,
                                             so the message logger will not move anymore if the bar number is equal or
                                             lower than this parameter.
@@ -1659,6 +1738,7 @@ rendering on the screen. Handles the file logger.</p></div>
                                                        level=level,
                                                        permanent_progressbar_slots=permanent_progressbar_slots,
                                                        message_number=message_number,
+                                                       exception_number=exception_number,
                                                        redraw_frequency_millis=redraw_frequency_millis))
 
     def set_configuration(self, command):
@@ -1672,8 +1752,29 @@ rendering on the screen. Handles the file logger.</p></div>
         self.level = command.level
         self.task_millis_to_removal = command.task_millis_to_removal
 
-        # If messages already exists
+        # Do not clear exceptions if the user changes the configuration during runtime
+        if self.exceptions:
+            # If exceptions already exists
+            current_length = len(self.exceptions)
+
+            if command.exception_number < current_length:
+                # Delete exceptions from the end to desired index to keep most recent exceptions
+                range_to_delete = current_length - command.exception_number
+                for i in range(range_to_delete):
+                    del self.exceptions[-1]
+
+            elif command.exception_number > current_length:
+                # Add empty slots at the end
+                range_to_add = command.exception_number - current_length
+                for i in range(range_to_add):
+                    self.exceptions.append('')
+        else:
+            # Else, initialize a new list
+            self.exceptions = command.exception_number * ['']
+
+        # Do not clear messages if the user changes the configuration during runtime
         if self.messages:
+            # If messages already exists
             current_length = len(self.messages)
 
             if command.message_number < current_length:
@@ -1731,6 +1832,9 @@ rendering on the screen. Handles the file logger.</p></div>
 
             elif isinstance(o, FlushCommand):
                 self.flush()
+
+            elif isinstance(o, StacktraceCommand):
+                self.throw(command=o)
 
             elif isinstance(o, SetConfigurationCommand):
                 self.set_configuration(command=o)
@@ -1896,12 +2000,22 @@ rendering on the screen. Handles the file logger.</p></div>
                 sys.stdout.write('\n\t\t---\n')
 
         # Draw some space between bars and messages
-        if self.permanent_progressbar_slots > 0 or len(self.tasks) > 0:
-            sys.stdout.write('\n\n')
+        if len(self.messages) > 0:
+            if self.permanent_progressbar_slots > 0 or len(self.tasks) > 0:
+                sys.stdout.write('\n\n')
 
-        # Print all the last log messages
-        for m in self.messages:
-            sys.stdout.write(m)
+            # Print all the last log messages
+            for m in self.messages:
+                sys.stdout.write(m)
+
+        # Draw some space between messages and exceptions
+        if len(self.exceptions) > 0:
+            if len(self.messages) > 0:
+                sys.stdout.write('\n\n')
+
+            # Print all the exceptions
+            for ex in self.exceptions:
+                sys.stdout.write(ex)
 
     def append_message(self,
                        message):
@@ -1910,7 +2024,8 @@ rendering on the screen. Handles the file logger.</p></div>
         :param message: The formatted text to log.
         """
         # Delete the first message of the list
-        del self.messages[0]
+        if len(self.messages) > 0:
+            del self.messages[0]
 
         # Append the new message at the end
         self.messages.append(message)
@@ -1919,11 +2034,28 @@ rendering on the screen. Handles the file logger.</p></div>
         # Redraw
         self.redraw()
 
+    def append_exception(self,
+                         stacktrace):
+        """
+        Appends the given exception at the top of the exception list and delete the oldest one (bottom most).
+        :param stacktrace: Stacktrace string as returned by 'traceback.format_exc()' in an 'except' block.
+        """
+        # Delete the last message of the list
+        if len(self.exceptions) > 0:
+            del self.exceptions[-1]
+
+        # Append the new message at the top
+        self.exceptions.insert(0, stacktrace)
+        self.changes_made = True
+
+        # Redraw
+        self.redraw()
+
     def flush(self):
         """
-        Flushes the remaining messages and progress bars state by forcing redraw. Can be useful if you want to be sure
-        that a message or progress has been updated in display at a given moment in code, like when you are exiting an
-        application or doing some kind of synchronized operations.
+        Flushes the remaining messages, exceptions and progress bars state by forcing redraw. Can be useful if you want
+        to be sure that a message or progress has been updated in display at a given moment in code, like when you are
+        exiting an application or doing some kind of synchronized operations.
         """
         self.refresh_timer = 0
         self.changes_made = True
@@ -2063,6 +2195,16 @@ rendering on the screen. Handles the file logger.</p></div>
             self.append_message(message)
 
         self.log.critical('\t{}'.format(command.text))
+
+    def throw(self, command):
+        """
+        Posts an exception's stacktrace string as returned by 'traceback.format_exc()' in an 'except' block.
+        :param command: The command object that holds all the necessary information from the remote process.
+        """
+        message = '{} [{}]\t[Process {}]:\n{}\n'.format(self.current_timestamp(), 'EXCEPTION', command.pid, command.stacktrace)
+        self.append_exception(message)
+
+        self.log.critical('\t{}'.format(message))
 </code></pre>
   </div>
 </div>
@@ -2084,6 +2226,18 @@ rendering on the screen. Handles the file logger.</p></div>
             
   
     <div class="desc"><p>Indicates if a new message has been posted or if a task has updated. If none, then there is no need to redraw.</p></div>
+  <div class="source_cont">
+</div>
+
+            </div>
+            <div class="item">
+            <p id="FancyLogger.processing.MultiprocessingLogger.exceptions" class="name">var <span class="ident">exceptions</span></p>
+            
+
+            
+  
+    <div class="desc"><p>When a process sends an exception to the logger, the stacktrace will be permanently displayed below log messages."
+So the user can see that a process has failed even if the console is refreshing.</p></div>
   <div class="source_cont">
 </div>
 
@@ -2227,7 +2381,7 @@ The progress bar may vanish at a further time as the redraw rate depends upon ti
             
   <div class="item">
     <div class="name def" id="FancyLogger.processing.MultiprocessingLogger.__init__">
-    <p>def <span class="ident">__init__</span>(</p><p>self, queue, message_number, permanent_progressbar_slots, redraw_frequency_millis, level, task_millis_to_removal)</p>
+    <p>def <span class="ident">__init__</span>(</p><p>self, queue, message_number, exception_number, permanent_progressbar_slots, redraw_frequency_millis, level, task_millis_to_removal)</p>
     </div>
     
 
@@ -2238,6 +2392,7 @@ used one time only.
 :param queue:                       Queue to receive orders from all processes. Must be the same object
                                     reference as processes that send log messages and progress updates.
 :param message_number:              Number of simultaneously displayed messages below progress bars.
+:param exception_number:            Number of simultaneously displayed exceptions below messages.
 :param permanent_progressbar_slots: The amount of vertical space (bar slots) to keep at all times,
                                     so the message logger will not move anymore if the bar number is equal or
                                     lower than this parameter.
@@ -2253,6 +2408,7 @@ used one time only.
     <pre><code>def __init__(self,
              queue,
              message_number,
+             exception_number,
              permanent_progressbar_slots,
              redraw_frequency_millis,
              level,
@@ -2263,6 +2419,7 @@ used one time only.
     :param queue:                       Queue to receive orders from all processes. Must be the same object
                                         reference as processes that send log messages and progress updates.
     :param message_number:              Number of simultaneously displayed messages below progress bars.
+    :param exception_number:            Number of simultaneously displayed exceptions below messages.
     :param permanent_progressbar_slots: The amount of vertical space (bar slots) to keep at all times,
                                         so the message logger will not move anymore if the bar number is equal or
                                         lower than this parameter.
@@ -2279,7 +2436,42 @@ used one time only.
                                                    level=level,
                                                    permanent_progressbar_slots=permanent_progressbar_slots,
                                                    message_number=message_number,
+                                                   exception_number=exception_number,
                                                    redraw_frequency_millis=redraw_frequency_millis))
+</code></pre>
+  </div>
+</div>
+
+  </div>
+  
+            
+  <div class="item">
+    <div class="name def" id="FancyLogger.processing.MultiprocessingLogger.append_exception">
+    <p>def <span class="ident">append_exception</span>(</p><p>self, stacktrace)</p>
+    </div>
+    
+
+    
+  
+    <div class="desc"><p>Appends the given exception at the top of the exception list and delete the oldest one (bottom most).
+:param stacktrace: Stacktrace string as returned by 'traceback.format_exc()' in an 'except' block.</p></div>
+  <div class="source_cont">
+  <p class="source_link"><a href="javascript:void(0);" onclick="toggle('source-FancyLogger.processing.MultiprocessingLogger.append_exception', this);">Show source &equiv;</a></p>
+  <div id="source-FancyLogger.processing.MultiprocessingLogger.append_exception" class="source">
+    <pre><code>def append_exception(self,
+                     stacktrace):
+    """
+    Appends the given exception at the top of the exception list and delete the oldest one (bottom most).
+    :param stacktrace: Stacktrace string as returned by 'traceback.format_exc()' in an 'except' block.
+    """
+    # Delete the last message of the list
+    if len(self.exceptions) > 0:
+        del self.exceptions[-1]
+    # Append the new message at the top
+    self.exceptions.insert(0, stacktrace)
+    self.changes_made = True
+    # Redraw
+    self.redraw()
 </code></pre>
   </div>
 </div>
@@ -2307,7 +2499,8 @@ used one time only.
     :param message: The formatted text to log.
     """
     # Delete the first message of the list
-    del self.messages[0]
+    if len(self.messages) > 0:
+        del self.messages[0]
     # Append the new message at the end
     self.messages.append(message)
     self.changes_made = True
@@ -2473,17 +2666,17 @@ immediately (may produce flickering) then call 'flush' method.
 
     
   
-    <div class="desc"><p>Flushes the remaining messages and progress bars state by forcing redraw. Can be useful if you want to be sure
-that a message or progress has been updated in display at a given moment in code, like when you are exiting an
-application or doing some kind of synchronized operations.</p></div>
+    <div class="desc"><p>Flushes the remaining messages, exceptions and progress bars state by forcing redraw. Can be useful if you want
+to be sure that a message or progress has been updated in display at a given moment in code, like when you are
+exiting an application or doing some kind of synchronized operations.</p></div>
   <div class="source_cont">
   <p class="source_link"><a href="javascript:void(0);" onclick="toggle('source-FancyLogger.processing.MultiprocessingLogger.flush', this);">Show source &equiv;</a></p>
   <div id="source-FancyLogger.processing.MultiprocessingLogger.flush" class="source">
     <pre><code>def flush(self):
     """
-    Flushes the remaining messages and progress bars state by forcing redraw. Can be useful if you want to be sure
-    that a message or progress has been updated in display at a given moment in code, like when you are exiting an
-    application or doing some kind of synchronized operations.
+    Flushes the remaining messages, exceptions and progress bars state by forcing redraw. Can be useful if you want
+    to be sure that a message or progress has been updated in display at a given moment in code, like when you are
+    exiting an application or doing some kind of synchronized operations.
     """
     self.refresh_timer = 0
     self.changes_made = True
@@ -2795,11 +2988,19 @@ minimum time elapsed since the last redraw is enough.</p></div>
         for i in range(slots):
             sys.stdout.write('\n\t\t---\n')
     # Draw some space between bars and messages
-    if self.permanent_progressbar_slots > 0 or len(self.tasks) > 0:
-        sys.stdout.write('\n\n')
-    # Print all the last log messages
-    for m in self.messages:
-        sys.stdout.write(m)
+    if len(self.messages) > 0:
+        if self.permanent_progressbar_slots > 0 or len(self.tasks) > 0:
+            sys.stdout.write('\n\n')
+        # Print all the last log messages
+        for m in self.messages:
+            sys.stdout.write(m)
+    # Draw some space between messages and exceptions
+    if len(self.exceptions) > 0:
+        if len(self.messages) > 0:
+            sys.stdout.write('\n\n')
+        # Print all the exceptions
+        for ex in self.exceptions:
+            sys.stdout.write(ex)
 </code></pre>
   </div>
 </div>
@@ -2852,6 +3053,8 @@ Then return from this method when the main application calls for exit, which is 
             self.set_task(command=o)
         elif isinstance(o, FlushCommand):
             self.flush()
+        elif isinstance(o, StacktraceCommand):
+            self.throw(command=o)
         elif isinstance(o, SetConfigurationCommand):
             self.set_configuration(command=o)
         elif isinstance(o, ExitCommand):
@@ -2889,8 +3092,26 @@ behavior.
     self.redraw_frequency_millis = command.redraw_frequency_millis
     self.level = command.level
     self.task_millis_to_removal = command.task_millis_to_removal
-    # If messages already exists
+    # Do not clear exceptions if the user changes the configuration during runtime
+    if self.exceptions:
+        # If exceptions already exists
+        current_length = len(self.exceptions)
+        if command.exception_number < current_length:
+            # Delete exceptions from the end to desired index to keep most recent exceptions
+            range_to_delete = current_length - command.exception_number
+            for i in range(range_to_delete):
+                del self.exceptions[-1]
+        elif command.exception_number > current_length:
+            # Add empty slots at the end
+            range_to_add = command.exception_number - current_length
+            for i in range(range_to_add):
+                self.exceptions.append('')
+    else:
+        # Else, initialize a new list
+        self.exceptions = command.exception_number * ['']
+    # Do not clear messages if the user changes the configuration during runtime
     if self.messages:
+        # If messages already exists
         current_length = len(self.messages)
         if command.message_number < current_length:
             # Delete messages from 0 to desired index to keep most recent messages
@@ -3017,6 +3238,34 @@ behavior.
     Terminate process; sends SIGTERM signal or uses TerminateProcess()
     '''
     self._popen.terminate()
+</code></pre>
+  </div>
+</div>
+
+  </div>
+  
+            
+  <div class="item">
+    <div class="name def" id="FancyLogger.processing.MultiprocessingLogger.throw">
+    <p>def <span class="ident">throw</span>(</p><p>self, command)</p>
+    </div>
+    
+
+    
+  
+    <div class="desc"><p>Posts an exception's stacktrace string as returned by 'traceback.format_exc()' in an 'except' block.
+:param command: The command object that holds all the necessary information from the remote process.</p></div>
+  <div class="source_cont">
+  <p class="source_link"><a href="javascript:void(0);" onclick="toggle('source-FancyLogger.processing.MultiprocessingLogger.throw', this);">Show source &equiv;</a></p>
+  <div id="source-FancyLogger.processing.MultiprocessingLogger.throw" class="source">
+    <pre><code>def throw(self, command):
+    """
+    Posts an exception's stacktrace string as returned by 'traceback.format_exc()' in an 'except' block.
+    :param command: The command object that holds all the necessary information from the remote process.
+    """
+    message = '{} [{}]\t[Process {}]:\n{}\n'.format(self.current_timestamp(), 'EXCEPTION', command.pid, command.stacktrace)
+    self.append_exception(message)
+    self.log.critical('\t{}'.format(message))
 </code></pre>
   </div>
 </div>

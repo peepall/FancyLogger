@@ -127,6 +127,7 @@ class SetConfigurationCommand(ProcessCommand):
 
     def __init__(self,
                  message_number,
+                 exception_number,
                  permanent_progressbar_slots,
                  redraw_frequency_millis,
                  level,
@@ -134,6 +135,7 @@ class SetConfigurationCommand(ProcessCommand):
         """
         Defines the current configuration of the logger.
         :param message_number:              Number of simultaneously displayed messages below progress bars.
+        :param exception_number:            Number of simultaneously displayed exceptions below messages.
         :param permanent_progressbar_slots: The amount of vertical space (bar slots) to keep at all times,
                                             so the message logger will not move anymore if the bar number is equal or
                                             lower than this parameter.
@@ -147,7 +149,27 @@ class SetConfigurationCommand(ProcessCommand):
         super(SetConfigurationCommand, self).__init__()
 
         self.message_number = message_number
+        self.exception_number = exception_number
         self.permanent_progressbar_slots = permanent_progressbar_slots
         self.redraw_frequency_millis = redraw_frequency_millis
         self.level = level
         self.task_millis_to_removal = task_millis_to_removal
+
+
+class StacktraceCommand(ProcessCommand):
+    """
+    Posts an exception's stacktrace to the logger.
+    """
+
+    def __init__(self,
+                 pid,
+                 stacktrace):
+        """
+        Sends an exception's stacktrace to the logger.
+        :param pid:         The current process's pid.
+        :param stacktrace:  Stacktrace string as returned by 'traceback.format_exc()' in an 'except' block.
+        """
+        super(StacktraceCommand, self).__init__()
+
+        self.pid = pid
+        self.stacktrace = stacktrace

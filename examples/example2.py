@@ -3,6 +3,7 @@
 
 import os
 import time
+import traceback
 from multiprocessing import Process
 from random import randrange
 
@@ -24,17 +25,25 @@ class WorkerClass(Process):
         self.enumerable_data = range(randrange(50, 500))
 
     def run(self):
-        self.logger.info(pid('Hello there :)'))
+        try:
+            self.logger.info(pid('Hello there :)'))
 
-        # Here we simulate some work using a progress bar iterator
-        for _ in self.logger.progress(enumerable=self.enumerable_data,
-                                      task_progress_object=TaskProgress(total=None,  # Total is computed by iterator
-                                                                        prefix=pid('Progress'),
-                                                                        keep_alive=False,
-                                                                        display_time=True)):
-            time.sleep(.01)
+            # Here we simulate some work using a progress bar iterator
+            for _ in self.logger.progress(enumerable=self.enumerable_data,
+                                          task_progress_object=TaskProgress(total=None,  # Total is computed by iterator
+                                                                            prefix=pid('Progress'),
+                                                                            keep_alive=False,
+                                                                            display_time=True)):
+                if not randrange(0, 800):
+                    raise RuntimeError('Something went wrong :(')
+                else:
+                    time.sleep(.01)
 
-        self.logger.info(pid('See you later!'))
+            self.logger.info(pid('See you later!'))
+
+        except RuntimeError:
+            # Send the exception info to the logger
+            self.logger.throw(stacktrace=traceback.format_exc())
 
 
 class App(object):
@@ -46,7 +55,8 @@ class App(object):
     def example(cls):
 
         # Configure and start the logger process
-        logger = FancyLogger(permanent_progressbar_slots=9)
+        logger = FancyLogger(permanent_progressbar_slots=9,
+                             exception_number=2)
 
         # Create a random list of worker processes
         workers = [WorkerClass(logger) for _ in range(randrange(5, 10))]

@@ -1037,6 +1037,15 @@ table {
 
         </li>
         <li class="mono">
+        <span class="class_name"><a href="#FancyLogger.commands.StacktraceCommand">StacktraceCommand</a></span>
+        
+          
+  <ul>
+    <li class="mono"><a href="#FancyLogger.commands.StacktraceCommand.__init__">__init__</a></li>
+  </ul>
+
+        </li>
+        <li class="mono">
         <span class="class_name"><a href="#FancyLogger.commands.UpdateProgressCommand">UpdateProgressCommand</a></span>
         
           
@@ -1193,6 +1202,7 @@ class SetConfigurationCommand(ProcessCommand):
 
     def __init__(self,
                  message_number,
+                 exception_number,
                  permanent_progressbar_slots,
                  redraw_frequency_millis,
                  level,
@@ -1200,6 +1210,7 @@ class SetConfigurationCommand(ProcessCommand):
         """
         Defines the current configuration of the logger.
         :param message_number:              Number of simultaneously displayed messages below progress bars.
+        :param exception_number:            Number of simultaneously displayed exceptions below messages.
         :param permanent_progressbar_slots: The amount of vertical space (bar slots) to keep at all times,
                                             so the message logger will not move anymore if the bar number is equal or
                                             lower than this parameter.
@@ -1213,10 +1224,30 @@ class SetConfigurationCommand(ProcessCommand):
         super(SetConfigurationCommand, self).__init__()
 
         self.message_number = message_number
+        self.exception_number = exception_number
         self.permanent_progressbar_slots = permanent_progressbar_slots
         self.redraw_frequency_millis = redraw_frequency_millis
         self.level = level
         self.task_millis_to_removal = task_millis_to_removal
+
+
+class StacktraceCommand(ProcessCommand):
+    """
+    Posts an exception's stacktrace to the logger.
+    """
+
+    def __init__(self,
+                 pid,
+                 stacktrace):
+        """
+        Sends an exception's stacktrace to the logger.
+        :param pid:         The current process's pid.
+        :param stacktrace:  Stacktrace string as returned by 'traceback.format_exc()' in an 'except' block.
+        """
+        super(StacktraceCommand, self).__init__()
+
+        self.pid = pid
+        self.stacktrace = stacktrace
 </code></pre>
   </div>
 
@@ -1617,6 +1648,7 @@ immediately (may produce flickering) then call 'flush' method.
 
     def __init__(self,
                  message_number,
+                 exception_number,
                  permanent_progressbar_slots,
                  redraw_frequency_millis,
                  level,
@@ -1624,6 +1656,7 @@ immediately (may produce flickering) then call 'flush' method.
         """
         Defines the current configuration of the logger.
         :param message_number:              Number of simultaneously displayed messages below progress bars.
+        :param exception_number:            Number of simultaneously displayed exceptions below messages.
         :param permanent_progressbar_slots: The amount of vertical space (bar slots) to keep at all times,
                                             so the message logger will not move anymore if the bar number is equal or
                                             lower than this parameter.
@@ -1637,6 +1670,7 @@ immediately (may produce flickering) then call 'flush' method.
         super(SetConfigurationCommand, self).__init__()
 
         self.message_number = message_number
+        self.exception_number = exception_number
         self.permanent_progressbar_slots = permanent_progressbar_slots
         self.redraw_frequency_millis = redraw_frequency_millis
         self.level = level
@@ -1657,7 +1691,7 @@ immediately (may produce flickering) then call 'flush' method.
             
   <div class="item">
     <div class="name def" id="FancyLogger.commands.SetConfigurationCommand.__init__">
-    <p>def <span class="ident">__init__</span>(</p><p>self, message_number, permanent_progressbar_slots, redraw_frequency_millis, level, task_millis_to_removal)</p>
+    <p>def <span class="ident">__init__</span>(</p><p>self, message_number, exception_number, permanent_progressbar_slots, redraw_frequency_millis, level, task_millis_to_removal)</p>
     </div>
     
 
@@ -1665,6 +1699,7 @@ immediately (may produce flickering) then call 'flush' method.
   
     <div class="desc"><p>Defines the current configuration of the logger.
 :param message_number:              Number of simultaneously displayed messages below progress bars.
+:param exception_number:            Number of simultaneously displayed exceptions below messages.
 :param permanent_progressbar_slots: The amount of vertical space (bar slots) to keep at all times,
                                     so the message logger will not move anymore if the bar number is equal or
                                     lower than this parameter.
@@ -1679,6 +1714,7 @@ immediately (may produce flickering) then call 'flush' method.
   <div id="source-FancyLogger.commands.SetConfigurationCommand.__init__" class="source">
     <pre><code>def __init__(self,
              message_number,
+             exception_number,
              permanent_progressbar_slots,
              redraw_frequency_millis,
              level,
@@ -1686,6 +1722,7 @@ immediately (may produce flickering) then call 'flush' method.
     """
     Defines the current configuration of the logger.
     :param message_number:              Number of simultaneously displayed messages below progress bars.
+    :param exception_number:            Number of simultaneously displayed exceptions below messages.
     :param permanent_progressbar_slots: The amount of vertical space (bar slots) to keep at all times,
                                         so the message logger will not move anymore if the bar number is equal or
                                         lower than this parameter.
@@ -1698,6 +1735,7 @@ immediately (may produce flickering) then call 'flush' method.
     """
     super(SetConfigurationCommand, self).__init__()
     self.message_number = message_number
+    self.exception_number = exception_number
     self.permanent_progressbar_slots = permanent_progressbar_slots
     self.redraw_frequency_millis = redraw_frequency_millis
     self.level = level
@@ -1709,6 +1747,16 @@ immediately (may produce flickering) then call 'flush' method.
   </div>
   
           <h3>Instance variables</h3>
+            <div class="item">
+            <p id="FancyLogger.commands.SetConfigurationCommand.exception_number" class="name">var <span class="ident">exception_number</span></p>
+            
+
+            
+  
+  <div class="source_cont">
+</div>
+
+            </div>
             <div class="item">
             <p id="FancyLogger.commands.SetConfigurationCommand.level" class="name">var <span class="ident">level</span></p>
             
@@ -1845,6 +1893,100 @@ immediately (may produce flickering) then call 'flush' method.
             </div>
             <div class="item">
             <p id="FancyLogger.commands.SetLevelCommand.level" class="name">var <span class="ident">level</span></p>
+            
+
+            
+  
+  <div class="source_cont">
+</div>
+
+            </div>
+      </div>
+      </div>
+      
+      <div class="item">
+      <p id="FancyLogger.commands.StacktraceCommand" class="name">class <span class="ident">StacktraceCommand</span></p>
+      
+  
+    <div class="desc"><p>Posts an exception's stacktrace to the logger.</p></div>
+  <div class="source_cont">
+  <p class="source_link"><a href="javascript:void(0);" onclick="toggle('source-FancyLogger.commands.StacktraceCommand', this);">Show source &equiv;</a></p>
+  <div id="source-FancyLogger.commands.StacktraceCommand" class="source">
+    <pre><code>class StacktraceCommand(ProcessCommand):
+    """
+    Posts an exception's stacktrace to the logger.
+    """
+
+    def __init__(self,
+                 pid,
+                 stacktrace):
+        """
+        Sends an exception's stacktrace to the logger.
+        :param pid:         The current process's pid.
+        :param stacktrace:  Stacktrace string as returned by 'traceback.format_exc()' in an 'except' block.
+        """
+        super(StacktraceCommand, self).__init__()
+
+        self.pid = pid
+        self.stacktrace = stacktrace
+</code></pre>
+  </div>
+</div>
+
+
+      <div class="class">
+          <h3>Ancestors (in MRO)</h3>
+          <ul class="class_list">
+          <li><a href="#FancyLogger.commands.StacktraceCommand">StacktraceCommand</a></li>
+          <li><a href="#FancyLogger.commands.ProcessCommand">ProcessCommand</a></li>
+          <li>builtins.object</li>
+          </ul>
+          <h3>Static methods</h3>
+            
+  <div class="item">
+    <div class="name def" id="FancyLogger.commands.StacktraceCommand.__init__">
+    <p>def <span class="ident">__init__</span>(</p><p>self, pid, stacktrace)</p>
+    </div>
+    
+
+    
+  
+    <div class="desc"><p>Sends an exception's stacktrace to the logger.
+:param pid:         The current process's pid.
+:param stacktrace:  Stacktrace string as returned by 'traceback.format_exc()' in an 'except' block.</p></div>
+  <div class="source_cont">
+  <p class="source_link"><a href="javascript:void(0);" onclick="toggle('source-FancyLogger.commands.StacktraceCommand.__init__', this);">Show source &equiv;</a></p>
+  <div id="source-FancyLogger.commands.StacktraceCommand.__init__" class="source">
+    <pre><code>def __init__(self,
+             pid,
+             stacktrace):
+    """
+    Sends an exception's stacktrace to the logger.
+    :param pid:         The current process's pid.
+    :param stacktrace:  Stacktrace string as returned by 'traceback.format_exc()' in an 'except' block.
+    """
+    super(StacktraceCommand, self).__init__()
+    self.pid = pid
+    self.stacktrace = stacktrace
+</code></pre>
+  </div>
+</div>
+
+  </div>
+  
+          <h3>Instance variables</h3>
+            <div class="item">
+            <p id="FancyLogger.commands.StacktraceCommand.pid" class="name">var <span class="ident">pid</span></p>
+            
+
+            
+  
+  <div class="source_cont">
+</div>
+
+            </div>
+            <div class="item">
+            <p id="FancyLogger.commands.StacktraceCommand.stacktrace" class="name">var <span class="ident">stacktrace</span></p>
             
 
             

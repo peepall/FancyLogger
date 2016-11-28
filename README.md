@@ -5,7 +5,8 @@ Tested on Windows and CentOS Linux using Python 3.5.1.
   
   
  * Support for multiple progress bars  
- * Auto-scrolling message logger below the progress bars  
+ * Auto-scrolling message logger below the progress bars
+ * Auto-scrolling exception logger below the messages
  * Configurable decimals for percentage  
  * Display elapsed time in human readable format from seconds to weeks  
  * Display a prefix to the left of the progress bar  
@@ -17,7 +18,7 @@ Tested on Windows and CentOS Linux using Python 3.5.1.
  * Define the maximum number of displayed messages, but log files will keep them all  
  * Python's multiprocessing support
   
- ## Iterator usage
+ ## Iterator usage, throwing exceptions from remote processes
  ![example2-runtime.gif](https://github.com/peepall/FancyLogger/blob/master/examples/example2-runtime.gif)
   
 ```python
@@ -26,6 +27,7 @@ Tested on Windows and CentOS Linux using Python 3.5.1.
 
 import os
 import time
+import traceback
 from multiprocessing import Process
 from random import randrange
 
@@ -47,17 +49,25 @@ class WorkerClass(Process):
         self.enumerable_data = range(randrange(50, 500))
 
     def run(self):
-        self.logger.info(pid('Hello there :)'))
+        try:
+            self.logger.info(pid('Hello there :)'))
 
-        # Here we simulate some work using a progress bar iterator
-        for _ in self.logger.progress(enumerable=self.enumerable_data,
-                                      task_progress_object=TaskProgress(total=None,  # Total is computed by iterator
-                                                                        prefix=pid('Progress'),
-                                                                        keep_alive=False,
-                                                                        display_time=True)):
-            time.sleep(.01)
+            # Here we simulate some work using a progress bar iterator
+            for _ in self.logger.progress(enumerable=self.enumerable_data,
+                                          task_progress_object=TaskProgress(total=None,  # Total is computed by iterator
+                                                                            prefix=pid('Progress'),
+                                                                            keep_alive=False,
+                                                                            display_time=True)):
+                if not randrange(0, 800):
+                    raise RuntimeError('Something went wrong :(')
+                else:
+                    time.sleep(.01)
 
-        self.logger.info(pid('See you later!'))
+            self.logger.info(pid('See you later!'))
+
+        except RuntimeError:
+            # Send the exception info to the logger
+            self.logger.throw(stacktrace=traceback.format_exc())
 
 
 class App(object):
@@ -69,7 +79,8 @@ class App(object):
     def example(cls):
 
         # Configure and start the logger process
-        logger = FancyLogger(permanent_progressbar_slots=9)
+        logger = FancyLogger(permanent_progressbar_slots=9,
+                             exception_number=2)
 
         # Create a random list of worker processes
         workers = [WorkerClass(logger) for _ in range(randrange(5, 10))]
