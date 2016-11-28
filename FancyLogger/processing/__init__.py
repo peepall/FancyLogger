@@ -427,8 +427,9 @@ class MultiprocessingLogger(Process):
         exiting an application or doing some kind of synchronized operations.
         """
         self.refresh_timer = 0
-        self.changes_made = True
 
+        # Redraw
+        self.changes_made = True
         self.redraw()
 
     @staticmethod
@@ -458,7 +459,9 @@ class MultiprocessingLogger(Process):
 
         self.longest_bar_prefix_size = self.longest_bar_prefix_value()
 
+        # Redraw
         self.changes_made = True
+        self.redraw()
 
     def update(self, command):
         """
@@ -471,9 +474,9 @@ class MultiprocessingLogger(Process):
         :param command: The command object that holds all the necessary information from the remote process.
         """
         if command.task_id in self.tasks and self.tasks[command.task_id].set_progress(command.progress):
-            self.changes_made = True
 
             # Redraw
+            self.changes_made = True
             self.redraw()
 
     def debug(self, command):
@@ -488,6 +491,10 @@ class MultiprocessingLogger(Process):
         if self.level == logging.DEBUG:
             message = '{} [{}]\t{}\n'.format(self.current_timestamp(), 'DEBUG', command.text)
             self.append_message(message)
+
+            # Redraw
+            self.changes_made = True
+            self.redraw()
 
         self.log.debug('\t{}'.format(command.text))
 
@@ -505,6 +512,10 @@ class MultiprocessingLogger(Process):
 
             message = '{} [{}]\t{}\n'.format(self.current_timestamp(), 'INFO', command.text)
             self.append_message(message)
+
+            # Redraw
+            self.changes_made = True
+            self.redraw()
 
         self.log.info('\t\t{}'.format(command.text))
 
@@ -524,6 +535,10 @@ class MultiprocessingLogger(Process):
             message = '{} [{}]\t{}\n'.format(self.current_timestamp(), 'WARNING', command.text)
             self.append_message(message)
 
+            # Redraw
+            self.changes_made = True
+            self.redraw()
+
         self.log.warning('\t{}'.format(command.text))
 
     def error(self, command):
@@ -542,6 +557,10 @@ class MultiprocessingLogger(Process):
 
             message = '{} [{}]\t{}\n'.format(self.current_timestamp(), 'ERROR', command.text)
             self.append_message(message)
+
+            # Redraw
+            self.changes_made = True
+            self.redraw()
 
         self.log.error('\t{}'.format(command.text))
 
@@ -563,6 +582,10 @@ class MultiprocessingLogger(Process):
             message = '{} [{}]\t{}\n'.format(self.current_timestamp(), 'CRITICAL', command.text)
             self.append_message(message)
 
+            # Redraw
+            self.changes_made = True
+            self.redraw()
+
         self.log.critical('\t{}'.format(command.text))
 
     def throw(self, command):
@@ -572,5 +595,9 @@ class MultiprocessingLogger(Process):
         """
         message = '{} [{}]\t[Process {}]:\n{}\n'.format(self.current_timestamp(), 'EXCEPTION', command.pid, command.stacktrace)
         self.append_exception(message)
+
+        # Redraw
+        self.changes_made = True
+        self.redraw()
 
         self.log.critical('\t{}'.format(message))

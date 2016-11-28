@@ -78,6 +78,10 @@ class TaskProgress(object):
         if _progress == self.total and self.display_time:
             self.end_time = time.time() * 1000
 
+            # If the task has completed instantly then define its begin_time too
+            if not self.begin_time:
+                self.begin_time = self.end_time
+
         has_changed = self.progress != _progress
 
         if has_changed:
