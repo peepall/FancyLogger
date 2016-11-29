@@ -40,8 +40,24 @@ def pid(text):
 
 class WorkerClass(Process):
 
+    worker_names = ['RailwayDrill',
+                    'FeatureStone',
+                    'CountryCollar',
+                    'ClaveSpyke',
+                    'RayonTemple',
+                    'TurtleDesign',
+                    'WrenchGander',
+                    'IkebanaShelf',
+                    'FeedbackChime',
+                    'PreparedNumeric',
+                    'EntranceParrot']
+
     def __init__(self, logger):
         super(WorkerClass, self).__init__()
+
+        if len(self.worker_names) > 0:
+            self.name = self.worker_names[0]
+            del self.worker_names[0]
 
         self.logger = logger
 
@@ -67,7 +83,8 @@ class WorkerClass(Process):
 
         except RuntimeError:
             # Send the exception info to the logger
-            self.logger.throw(stacktrace=traceback.format_exc())
+            self.logger.throw(stacktrace=traceback.format_exc(),
+                              process_title=self.name)
 
 
 class App(object):
