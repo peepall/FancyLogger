@@ -32,7 +32,7 @@ class MultiprocessingLogger(Process):
     "Queue to receive orders from all processes."
     log = None
     "The python logging's logger for files only."
-    os_flush_command = 'cls' if os.name == 'nt' else 'clear'
+    os_flush_command = 'cls' if os.name == 'nt' else 'echo -e "\\033c\\e[3J"'
     "The clear command on Unix and cls command on Windows."
     longest_bar_prefix_size = 0
     "Defines the longest task prefix in order to align progress bars to the left."
@@ -593,7 +593,7 @@ class MultiprocessingLogger(Process):
         Posts an exception's stacktrace string as returned by 'traceback.format_exc()' in an 'except' block.
         :param command: The command object that holds all the necessary information from the remote process.
         """
-        message = '{} [{}]\t[Process {}]:\n{}\n'.format(self.current_timestamp(), 'EXCEPTION', command.pid, command.stacktrace)
+        message = '{} [{}]\t[Process {}{}]:\n{}\n'.format(self.current_timestamp(), 'EXCEPTION', command.pid, ' - {}'.format(command.process_title) if command.process_title else '', command.stacktrace)
         self.append_exception(message)
 
         # Redraw

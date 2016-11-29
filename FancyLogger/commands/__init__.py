@@ -163,13 +163,16 @@ class StacktraceCommand(ProcessCommand):
 
     def __init__(self,
                  pid,
-                 stacktrace):
+                 stacktrace,
+                 process_title):
         """
         Sends an exception's stacktrace to the logger.
-        :param pid:         The current process's pid.
-        :param stacktrace:  Stacktrace string as returned by 'traceback.format_exc()' in an 'except' block.
+        :param pid:             The current process's pid.
+        :param stacktrace:      Stacktrace string as returned by 'traceback.format_exc()' in an 'except' block.
+        :param process_title:   Define the current process title to display into the logger for this exception..
         """
         super(StacktraceCommand, self).__init__()
 
         self.pid = pid
         self.stacktrace = stacktrace
+        self.process_title = process_title

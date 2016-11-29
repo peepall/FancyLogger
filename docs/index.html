@@ -1111,6 +1111,10 @@ class TaskProgress(object):
         if _progress == self.total and self.display_time:
             self.end_time = time.time() * 1000
 
+            # If the task has completed instantly then define its begin_time too
+            if not self.begin_time:
+                self.begin_time = self.end_time
+
         has_changed = self.progress != _progress
 
         if has_changed:
@@ -1357,13 +1361,17 @@ class FancyLogger(object):
         """
         self.queue.put(dill.dumps(LogMessageCommand(text=text, level=logging.CRITICAL)))
 
-    def throw(self, stacktrace):
+    def throw(self, stacktrace, process_title=None):
         """
         Sends an exception to the logger so it can display it as a special message. Prevents console refresh cycles from
         hiding exceptions that could be thrown by processes.
-        :param stacktrace: Stacktrace string as returned by 'traceback.format_exc()' in an 'except' block.
+        :param stacktrace:      Stacktrace string as returned by 'traceback.format_exc()' in an 'except' block.
+        :param process_title:   [Optional] Define the current process title to display into the logger for this
+                                exception.
         """
-        self.queue.put(dill.dumps(StacktraceCommand(pid=os.getpid(), stacktrace=stacktrace)))
+        self.queue.put(dill.dumps(StacktraceCommand(pid=os.getpid(),
+                                                    stacktrace=stacktrace,
+                                                    process_title=process_title)))
 
     # --------------------------------------------------------------------
     # Iterator implementation
@@ -1676,13 +1684,17 @@ Logger uses one file handler and then uses standard output (stdout) to draw on s
         """
         self.queue.put(dill.dumps(LogMessageCommand(text=text, level=logging.CRITICAL)))
 
-    def throw(self, stacktrace):
+    def throw(self, stacktrace, process_title=None):
         """
         Sends an exception to the logger so it can display it as a special message. Prevents console refresh cycles from
         hiding exceptions that could be thrown by processes.
-        :param stacktrace: Stacktrace string as returned by 'traceback.format_exc()' in an 'except' block.
+        :param stacktrace:      Stacktrace string as returned by 'traceback.format_exc()' in an 'except' block.
+        :param process_title:   [Optional] Define the current process title to display into the logger for this
+                                exception.
         """
-        self.queue.put(dill.dumps(StacktraceCommand(pid=os.getpid(), stacktrace=stacktrace)))
+        self.queue.put(dill.dumps(StacktraceCommand(pid=os.getpid(),
+                                                    stacktrace=stacktrace,
+                                                    process_title=process_title)))
 
     # --------------------------------------------------------------------
     # Iterator implementation
@@ -2317,7 +2329,7 @@ messages of progresses that have not been displayed yet. This method blocks unti
             
   <div class="item">
     <div class="name def" id="FancyLogger.FancyLogger.throw">
-    <p>def <span class="ident">throw</span>(</p><p>self, stacktrace)</p>
+    <p>def <span class="ident">throw</span>(</p><p>self, stacktrace, process_title=None)</p>
     </div>
     
 
@@ -2325,17 +2337,23 @@ messages of progresses that have not been displayed yet. This method blocks unti
   
     <div class="desc"><p>Sends an exception to the logger so it can display it as a special message. Prevents console refresh cycles from
 hiding exceptions that could be thrown by processes.
-:param stacktrace: Stacktrace string as returned by 'traceback.format_exc()' in an 'except' block.</p></div>
+:param stacktrace:      Stacktrace string as returned by 'traceback.format_exc()' in an 'except' block.
+:param process_title:   [Optional] Define the current process title to display into the logger for this
+                        exception.</p></div>
   <div class="source_cont">
   <p class="source_link"><a href="javascript:void(0);" onclick="toggle('source-FancyLogger.FancyLogger.throw', this);">Show source &equiv;</a></p>
   <div id="source-FancyLogger.FancyLogger.throw" class="source">
-    <pre><code>def throw(self, stacktrace):
+    <pre><code>def throw(self, stacktrace, process_title=None):
     """
     Sends an exception to the logger so it can display it as a special message. Prevents console refresh cycles from
     hiding exceptions that could be thrown by processes.
-    :param stacktrace: Stacktrace string as returned by 'traceback.format_exc()' in an 'except' block.
+    :param stacktrace:      Stacktrace string as returned by 'traceback.format_exc()' in an 'except' block.
+    :param process_title:   [Optional] Define the current process title to display into the logger for this
+                            exception.
     """
-    self.queue.put(dill.dumps(StacktraceCommand(pid=os.getpid(), stacktrace=stacktrace)))
+    self.queue.put(dill.dumps(StacktraceCommand(pid=os.getpid(),
+                                                stacktrace=stacktrace,
+                                                process_title=process_title)))
 </code></pre>
   </div>
 </div>
@@ -2495,6 +2513,10 @@ The logger will iterate over TaskProgress objects to draw progress bars on scree
         if _progress == self.total and self.display_time:
             self.end_time = time.time() * 1000
 
+            # If the task has completed instantly then define its begin_time too
+            if not self.begin_time:
+                self.begin_time = self.end_time
+
         has_changed = self.progress != _progress
 
         if has_changed:
@@ -2612,6 +2634,9 @@ The logger will iterate over TaskProgress objects to draw progress bars on scree
     # Stop task chrono if needed
     if _progress == self.total and self.display_time:
         self.end_time = time.time() * 1000
+        # If the task has completed instantly then define its begin_time too
+        if not self.begin_time:
+            self.begin_time = self.end_time
     has_changed = self.progress != _progress
     if has_changed:
         self.progress = _progress

@@ -1065,7 +1065,7 @@ class MultiprocessingLogger(Process):
     "Queue to receive orders from all processes."
     log = None
     "The python logging's logger for files only."
-    os_flush_command = 'cls' if os.name == 'nt' else 'clear'
+    os_flush_command = 'cls' if os.name == 'nt' else 'echo -e "\\033c\\e[3J"'
     "The clear command on Unix and cls command on Windows."
     longest_bar_prefix_size = 0
     "Defines the longest task prefix in order to align progress bars to the left."
@@ -1460,8 +1460,9 @@ class MultiprocessingLogger(Process):
         exiting an application or doing some kind of synchronized operations.
         """
         self.refresh_timer = 0
-        self.changes_made = True
 
+        # Redraw
+        self.changes_made = True
         self.redraw()
 
     @staticmethod
@@ -1491,7 +1492,9 @@ class MultiprocessingLogger(Process):
 
         self.longest_bar_prefix_size = self.longest_bar_prefix_value()
 
+        # Redraw
         self.changes_made = True
+        self.redraw()
 
     def update(self, command):
         """
@@ -1504,9 +1507,9 @@ class MultiprocessingLogger(Process):
         :param command: The command object that holds all the necessary information from the remote process.
         """
         if command.task_id in self.tasks and self.tasks[command.task_id].set_progress(command.progress):
-            self.changes_made = True
 
             # Redraw
+            self.changes_made = True
             self.redraw()
 
     def debug(self, command):
@@ -1521,6 +1524,10 @@ class MultiprocessingLogger(Process):
         if self.level == logging.DEBUG:
             message = '{} [{}]\t{}\n'.format(self.current_timestamp(), 'DEBUG', command.text)
             self.append_message(message)
+
+            # Redraw
+            self.changes_made = True
+            self.redraw()
 
         self.log.debug('\t{}'.format(command.text))
 
@@ -1538,6 +1545,10 @@ class MultiprocessingLogger(Process):
 
             message = '{} [{}]\t{}\n'.format(self.current_timestamp(), 'INFO', command.text)
             self.append_message(message)
+
+            # Redraw
+            self.changes_made = True
+            self.redraw()
 
         self.log.info('\t\t{}'.format(command.text))
 
@@ -1557,6 +1568,10 @@ class MultiprocessingLogger(Process):
             message = '{} [{}]\t{}\n'.format(self.current_timestamp(), 'WARNING', command.text)
             self.append_message(message)
 
+            # Redraw
+            self.changes_made = True
+            self.redraw()
+
         self.log.warning('\t{}'.format(command.text))
 
     def error(self, command):
@@ -1575,6 +1590,10 @@ class MultiprocessingLogger(Process):
 
             message = '{} [{}]\t{}\n'.format(self.current_timestamp(), 'ERROR', command.text)
             self.append_message(message)
+
+            # Redraw
+            self.changes_made = True
+            self.redraw()
 
         self.log.error('\t{}'.format(command.text))
 
@@ -1596,6 +1615,10 @@ class MultiprocessingLogger(Process):
             message = '{} [{}]\t{}\n'.format(self.current_timestamp(), 'CRITICAL', command.text)
             self.append_message(message)
 
+            # Redraw
+            self.changes_made = True
+            self.redraw()
+
         self.log.critical('\t{}'.format(command.text))
 
     def throw(self, command):
@@ -1603,8 +1626,12 @@ class MultiprocessingLogger(Process):
         Posts an exception's stacktrace string as returned by 'traceback.format_exc()' in an 'except' block.
         :param command: The command object that holds all the necessary information from the remote process.
         """
-        message = '{} [{}]\t[Process {}]:\n{}\n'.format(self.current_timestamp(), 'EXCEPTION', command.pid, command.stacktrace)
+        message = '{} [{}]\t[Process {}{}]:\n{}\n'.format(self.current_timestamp(), 'EXCEPTION', command.pid, ' - {}'.format(command.process_title) if command.process_title else '', command.stacktrace)
         self.append_exception(message)
+
+        # Redraw
+        self.changes_made = True
+        self.redraw()
 
         self.log.critical('\t{}'.format(message))
 </code></pre>
@@ -1663,7 +1690,7 @@ rendering on the screen. Handles the file logger.</p></div>
     "Queue to receive orders from all processes."
     log = None
     "The python logging's logger for files only."
-    os_flush_command = 'cls' if os.name == 'nt' else 'clear'
+    os_flush_command = 'cls' if os.name == 'nt' else 'echo -e "\\033c\\e[3J"'
     "The clear command on Unix and cls command on Windows."
     longest_bar_prefix_size = 0
     "Defines the longest task prefix in order to align progress bars to the left."
@@ -2058,8 +2085,9 @@ rendering on the screen. Handles the file logger.</p></div>
         exiting an application or doing some kind of synchronized operations.
         """
         self.refresh_timer = 0
-        self.changes_made = True
 
+        # Redraw
+        self.changes_made = True
         self.redraw()
 
     @staticmethod
@@ -2089,7 +2117,9 @@ rendering on the screen. Handles the file logger.</p></div>
 
         self.longest_bar_prefix_size = self.longest_bar_prefix_value()
 
+        # Redraw
         self.changes_made = True
+        self.redraw()
 
     def update(self, command):
         """
@@ -2102,9 +2132,9 @@ rendering on the screen. Handles the file logger.</p></div>
         :param command: The command object that holds all the necessary information from the remote process.
         """
         if command.task_id in self.tasks and self.tasks[command.task_id].set_progress(command.progress):
-            self.changes_made = True
 
             # Redraw
+            self.changes_made = True
             self.redraw()
 
     def debug(self, command):
@@ -2119,6 +2149,10 @@ rendering on the screen. Handles the file logger.</p></div>
         if self.level == logging.DEBUG:
             message = '{} [{}]\t{}\n'.format(self.current_timestamp(), 'DEBUG', command.text)
             self.append_message(message)
+
+            # Redraw
+            self.changes_made = True
+            self.redraw()
 
         self.log.debug('\t{}'.format(command.text))
 
@@ -2136,6 +2170,10 @@ rendering on the screen. Handles the file logger.</p></div>
 
             message = '{} [{}]\t{}\n'.format(self.current_timestamp(), 'INFO', command.text)
             self.append_message(message)
+
+            # Redraw
+            self.changes_made = True
+            self.redraw()
 
         self.log.info('\t\t{}'.format(command.text))
 
@@ -2155,6 +2193,10 @@ rendering on the screen. Handles the file logger.</p></div>
             message = '{} [{}]\t{}\n'.format(self.current_timestamp(), 'WARNING', command.text)
             self.append_message(message)
 
+            # Redraw
+            self.changes_made = True
+            self.redraw()
+
         self.log.warning('\t{}'.format(command.text))
 
     def error(self, command):
@@ -2173,6 +2215,10 @@ rendering on the screen. Handles the file logger.</p></div>
 
             message = '{} [{}]\t{}\n'.format(self.current_timestamp(), 'ERROR', command.text)
             self.append_message(message)
+
+            # Redraw
+            self.changes_made = True
+            self.redraw()
 
         self.log.error('\t{}'.format(command.text))
 
@@ -2194,6 +2240,10 @@ rendering on the screen. Handles the file logger.</p></div>
             message = '{} [{}]\t{}\n'.format(self.current_timestamp(), 'CRITICAL', command.text)
             self.append_message(message)
 
+            # Redraw
+            self.changes_made = True
+            self.redraw()
+
         self.log.critical('\t{}'.format(command.text))
 
     def throw(self, command):
@@ -2201,8 +2251,12 @@ rendering on the screen. Handles the file logger.</p></div>
         Posts an exception's stacktrace string as returned by 'traceback.format_exc()' in an 'except' block.
         :param command: The command object that holds all the necessary information from the remote process.
         """
-        message = '{} [{}]\t[Process {}]:\n{}\n'.format(self.current_timestamp(), 'EXCEPTION', command.pid, command.stacktrace)
+        message = '{} [{}]\t[Process {}{}]:\n{}\n'.format(self.current_timestamp(), 'EXCEPTION', command.pid, ' - {}'.format(command.process_title) if command.process_title else '', command.stacktrace)
         self.append_exception(message)
+
+        # Redraw
+        self.changes_made = True
+        self.redraw()
 
         self.log.critical('\t{}'.format(message))
 </code></pre>
@@ -2546,6 +2600,9 @@ immediately (may produce flickering) then call 'flush' method.
             or self.level == logging.CRITICAL):
         message = '{} [{}]\t{}\n'.format(self.current_timestamp(), 'CRITICAL', command.text)
         self.append_message(message)
+        # Redraw
+        self.changes_made = True
+        self.redraw()
     self.log.critical('\t{}'.format(command.text))
 </code></pre>
   </div>
@@ -2610,6 +2667,9 @@ immediately (may produce flickering) then call 'flush' method.
     if self.level == logging.DEBUG:
         message = '{} [{}]\t{}\n'.format(self.current_timestamp(), 'DEBUG', command.text)
         self.append_message(message)
+        # Redraw
+        self.changes_made = True
+        self.redraw()
     self.log.debug('\t{}'.format(command.text))
 </code></pre>
   </div>
@@ -2650,6 +2710,9 @@ immediately (may produce flickering) then call 'flush' method.
             or self.level == logging.ERROR):
         message = '{} [{}]\t{}\n'.format(self.current_timestamp(), 'ERROR', command.text)
         self.append_message(message)
+        # Redraw
+        self.changes_made = True
+        self.redraw()
     self.log.error('\t{}'.format(command.text))
 </code></pre>
   </div>
@@ -2679,6 +2742,7 @@ exiting an application or doing some kind of synchronized operations.</p></div>
     exiting an application or doing some kind of synchronized operations.
     """
     self.refresh_timer = 0
+    # Redraw
     self.changes_made = True
     self.redraw()
 </code></pre>
@@ -2718,6 +2782,9 @@ immediately (may produce flickering) then call 'flush' method.
             or self.level == logging.INFO):
         message = '{} [{}]\t{}\n'.format(self.current_timestamp(), 'INFO', command.text)
         self.append_message(message)
+        # Redraw
+        self.changes_made = True
+        self.redraw()
     self.log.info('\t\t{}'.format(command.text))
 </code></pre>
   </div>
@@ -3181,7 +3248,9 @@ behavior.
     """
     self.tasks[command.task_id] = command.task
     self.longest_bar_prefix_size = self.longest_bar_prefix_value()
+    # Redraw
     self.changes_made = True
+    self.redraw()
 </code></pre>
   </div>
 </div>
@@ -3263,8 +3332,11 @@ behavior.
     Posts an exception's stacktrace string as returned by 'traceback.format_exc()' in an 'except' block.
     :param command: The command object that holds all the necessary information from the remote process.
     """
-    message = '{} [{}]\t[Process {}]:\n{}\n'.format(self.current_timestamp(), 'EXCEPTION', command.pid, command.stacktrace)
+    message = '{} [{}]\t[Process {}{}]:\n{}\n'.format(self.current_timestamp(), 'EXCEPTION', command.pid, ' - {}'.format(command.process_title) if command.process_title else '', command.stacktrace)
     self.append_exception(message)
+    # Redraw
+    self.changes_made = True
+    self.redraw()
     self.log.critical('\t{}'.format(message))
 </code></pre>
   </div>
@@ -3302,8 +3374,8 @@ immediately (may produce flickering) then call 'flush' method.
     :param command: The command object that holds all the necessary information from the remote process.
     """
     if command.task_id in self.tasks and self.tasks[command.task_id].set_progress(command.progress):
-        self.changes_made = True
         # Redraw
+        self.changes_made = True
         self.redraw()
 </code></pre>
   </div>
@@ -3343,6 +3415,9 @@ immediately (may produce flickering) then call 'flush' method.
             or self.level == logging.WARNING):
         message = '{} [{}]\t{}\n'.format(self.current_timestamp(), 'WARNING', command.text)
         self.append_message(message)
+        # Redraw
+        self.changes_made = True
+        self.redraw()
     self.log.warning('\t{}'.format(command.text))
 </code></pre>
   </div>

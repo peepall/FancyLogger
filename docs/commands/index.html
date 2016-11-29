@@ -1238,16 +1238,19 @@ class StacktraceCommand(ProcessCommand):
 
     def __init__(self,
                  pid,
-                 stacktrace):
+                 stacktrace,
+                 process_title):
         """
         Sends an exception's stacktrace to the logger.
-        :param pid:         The current process's pid.
-        :param stacktrace:  Stacktrace string as returned by 'traceback.format_exc()' in an 'except' block.
+        :param pid:             The current process's pid.
+        :param stacktrace:      Stacktrace string as returned by 'traceback.format_exc()' in an 'except' block.
+        :param process_title:   Define the current process title to display into the logger for this exception..
         """
         super(StacktraceCommand, self).__init__()
 
         self.pid = pid
         self.stacktrace = stacktrace
+        self.process_title = process_title
 </code></pre>
   </div>
 
@@ -1919,16 +1922,19 @@ immediately (may produce flickering) then call 'flush' method.
 
     def __init__(self,
                  pid,
-                 stacktrace):
+                 stacktrace,
+                 process_title):
         """
         Sends an exception's stacktrace to the logger.
-        :param pid:         The current process's pid.
-        :param stacktrace:  Stacktrace string as returned by 'traceback.format_exc()' in an 'except' block.
+        :param pid:             The current process's pid.
+        :param stacktrace:      Stacktrace string as returned by 'traceback.format_exc()' in an 'except' block.
+        :param process_title:   Define the current process title to display into the logger for this exception..
         """
         super(StacktraceCommand, self).__init__()
 
         self.pid = pid
         self.stacktrace = stacktrace
+        self.process_title = process_title
 </code></pre>
   </div>
 </div>
@@ -1945,29 +1951,33 @@ immediately (may produce flickering) then call 'flush' method.
             
   <div class="item">
     <div class="name def" id="FancyLogger.commands.StacktraceCommand.__init__">
-    <p>def <span class="ident">__init__</span>(</p><p>self, pid, stacktrace)</p>
+    <p>def <span class="ident">__init__</span>(</p><p>self, pid, stacktrace, process_title)</p>
     </div>
     
 
     
   
     <div class="desc"><p>Sends an exception's stacktrace to the logger.
-:param pid:         The current process's pid.
-:param stacktrace:  Stacktrace string as returned by 'traceback.format_exc()' in an 'except' block.</p></div>
+:param pid:             The current process's pid.
+:param stacktrace:      Stacktrace string as returned by 'traceback.format_exc()' in an 'except' block.
+:param process_title:   Define the current process title to display into the logger for this exception..</p></div>
   <div class="source_cont">
   <p class="source_link"><a href="javascript:void(0);" onclick="toggle('source-FancyLogger.commands.StacktraceCommand.__init__', this);">Show source &equiv;</a></p>
   <div id="source-FancyLogger.commands.StacktraceCommand.__init__" class="source">
     <pre><code>def __init__(self,
              pid,
-             stacktrace):
+             stacktrace,
+             process_title):
     """
     Sends an exception's stacktrace to the logger.
-    :param pid:         The current process's pid.
-    :param stacktrace:  Stacktrace string as returned by 'traceback.format_exc()' in an 'except' block.
+    :param pid:             The current process's pid.
+    :param stacktrace:      Stacktrace string as returned by 'traceback.format_exc()' in an 'except' block.
+    :param process_title:   Define the current process title to display into the logger for this exception..
     """
     super(StacktraceCommand, self).__init__()
     self.pid = pid
     self.stacktrace = stacktrace
+    self.process_title = process_title
 </code></pre>
   </div>
 </div>
@@ -1977,6 +1987,16 @@ immediately (may produce flickering) then call 'flush' method.
           <h3>Instance variables</h3>
             <div class="item">
             <p id="FancyLogger.commands.StacktraceCommand.pid" class="name">var <span class="ident">pid</span></p>
+            
+
+            
+  
+  <div class="source_cont">
+</div>
+
+            </div>
+            <div class="item">
+            <p id="FancyLogger.commands.StacktraceCommand.process_title" class="name">var <span class="ident">process_title</span></p>
             
 
             

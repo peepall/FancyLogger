@@ -328,13 +328,17 @@ class FancyLogger(object):
         """
         self.queue.put(dill.dumps(LogMessageCommand(text=text, level=logging.CRITICAL)))
 
-    def throw(self, stacktrace):
+    def throw(self, stacktrace, process_title=None):
         """
         Sends an exception to the logger so it can display it as a special message. Prevents console refresh cycles from
         hiding exceptions that could be thrown by processes.
-        :param stacktrace: Stacktrace string as returned by 'traceback.format_exc()' in an 'except' block.
+        :param stacktrace:      Stacktrace string as returned by 'traceback.format_exc()' in an 'except' block.
+        :param process_title:   [Optional] Define the current process title to display into the logger for this
+                                exception.
         """
-        self.queue.put(dill.dumps(StacktraceCommand(pid=os.getpid(), stacktrace=stacktrace)))
+        self.queue.put(dill.dumps(StacktraceCommand(pid=os.getpid(),
+                                                    stacktrace=stacktrace,
+                                                    process_title=process_title)))
 
     # --------------------------------------------------------------------
     # Iterator implementation
