@@ -10,7 +10,9 @@ Tested on Windows and CentOS Linux using Python 3.5.1.
  * Configurable decimals for percentage  
  * Display elapsed time in human readable format from seconds to weeks  
  * Display a prefix to the left of the progress bar  
- * Display a suffix to the right of the progress bar  
+ * Display a suffix to the right of the progress bar
+ * Configure file handlers as usual using python logging library
+ * Define the console logging format and time format
  * Keep alive even when completed  
  * Displayed length of the progress bar can vary  
  * Multiple progress bars will stay left-aligned  

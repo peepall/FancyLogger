@@ -5,11 +5,11 @@ import logging
 import os
 import sys
 import time
-import dill
 from collections import OrderedDict
-from logging import getLogger, Formatter
-from logging.handlers import RotatingFileHandler
+from logging import getLogger, StreamHandler
 from multiprocessing import Process
+
+import dill
 
 from ..commands import *
 
@@ -65,12 +65,29 @@ class MultiprocessingLogger(Process):
     Defines the minimum time in milliseconds between two redraws. It may be more because the redraw rate depends
     upon time AND method calls.
     """
-    level = None
-    "The logging level (from standard logging module)."
+    console_level = None
+    "The logging level (from standard logging module) for console output."
     task_millis_to_removal = None
     """
     Minimum number of milliseconds at maximum completion before a progress bar is removed from display.
     The progress bar may vanish at a further time as the redraw rate depends upon time AND method calls.
+    """
+    console_format_strftime = None
+    "Specify the time format for console log lines using python strftime format."
+    console_format = None
+    """
+    Specify the format of the console log lines. There are two variables available: {T} for timestamp, {L} for level.
+    Will then add some tabulations in order to align text beginning for all levels.
+    Which will produce: '29 november 2016 21:52:12 [INFO]      my log text'
+                        '29 november 2016 21:52:13 [WARNING]   my log text'
+                        '29 november 2016 21:52:14 [DEBUG]     my log text'
+    """
+    file_handlers = None
+    """
+    Specify the file handlers to use. Each file handler will use its own regular formatter and level. Console logging is
+    distinct from file logging. Console logging uses custom stdout formatting, while file logging uses regular python
+    logging rules. All handlers are permitted except StreamHandler if used with stdout or stderr which are reserved by
+    this library for custom console output.
     """
     # -------------
 
@@ -80,8 +97,11 @@ class MultiprocessingLogger(Process):
                  exception_number,
                  permanent_progressbar_slots,
                  redraw_frequency_millis,
-                 level,
-                 task_millis_to_removal):
+                 console_level,
+                 task_millis_to_removal,
+                 console_format_strftime,
+                 console_format,
+                 file_handlers):
         """
         Defines the current configuration of the logger and the queue to receive messages from remote processes. Must be
         used one time only.
@@ -94,21 +114,43 @@ class MultiprocessingLogger(Process):
                                             lower than this parameter.
         :param redraw_frequency_millis:     Minimum time lapse in milliseconds between two redraws. It may be
                                             more because the redraw rate depends upon time AND method calls.
-        :param level:                       The logging level (from standard logging module).
+        :param console_level:               The logging level (from standard logging module) for console output.
         :param task_millis_to_removal:      Minimum time lapse in milliseconds at maximum completion before
                                             a progress bar is removed from display. The progress bar may vanish at a
                                             further time as the redraw rate depends upon time AND method calls.
+        :param console_format_strftime:     Specify the time format for console log lines using python
+                                            strftime format.
+        :param console_format:              Specify the format of the console log lines. There are two
+                                            variables available: {T} for timestamp, {L} for level. Will then add some
+                                            tabulations in order to align text beginning for all levels.
+                                            Which will produce: '29 november 2016 21:52:12 [INFO]      my log text'
+                                                                '29 november 2016 21:52:13 [WARNING]   my log text'
+                                                                '29 november 2016 21:52:14 [DEBUG]     my log text'
+        :param file_handlers:               Specify the file handlers to use. Each file handler will use its
+                                            own regular formatter and level. Console logging is distinct from file
+                                            logging. Console logging uses custom stdout formatting, while file logging
+                                            uses regular python logging rules. All handlers are permitted except
+                                            StreamHandler if used with stdout or stderr which are reserved by this
+                                            library for custom console output.
         """
         super(MultiprocessingLogger, self).__init__()
 
         self.queue = queue
 
-        self.set_configuration(SetConfigurationCommand(task_millis_to_removal=task_millis_to_removal,
-                                                       level=level,
-                                                       permanent_progressbar_slots=permanent_progressbar_slots,
-                                                       message_number=message_number,
-                                                       exception_number=exception_number,
-                                                       redraw_frequency_millis=redraw_frequency_millis))
+        # We need to serialize objects between process instantiation and process execution because when we call
+        # 'start' method on the process, Python tries to copy instance objects between processes which can only be done
+        # with primitives. FileHandler objects cannot be serialized by pure python so we must do it explicitly and
+        # then deserialize them from the 'run' method
+        self.set_config_command = dill.dumps(SetConfigurationCommand(task_millis_to_removal=task_millis_to_removal,
+                                                                     console_level=console_level,
+                                                                     permanent_progressbar_slots=
+                                                                     permanent_progressbar_slots,
+                                                                     message_number=message_number,
+                                                                     exception_number=exception_number,
+                                                                     redraw_frequency_millis=redraw_frequency_millis,
+                                                                     console_format_strftime=console_format_strftime,
+                                                                     console_format=console_format,
+                                                                     file_handlers=file_handlers))
 
     def set_configuration(self, command):
         """
@@ -118,8 +160,27 @@ class MultiprocessingLogger(Process):
         """
         self.permanent_progressbar_slots = command.permanent_progressbar_slots
         self.redraw_frequency_millis = command.redraw_frequency_millis
-        self.level = command.level
+        self.console_level = command.console_level
         self.task_millis_to_removal = command.task_millis_to_removal
+
+        self.console_format_strftime = command.console_format_strftime
+        self.console_format = command.console_format
+        self.file_handlers = command.file_handlers
+
+        # If the logger has already been initialized, then clear file handlers and add the new ones
+        if len(self.log.handlers) > 0:
+            self.log.handlers.clear()
+
+            for handler in self.file_handlers:
+                if isinstance(handler, StreamHandler)\
+                        and (handler.stream == sys.stdout or handler.stream == sys.stderr):
+                    self.critical(LogMessageCommand(text='Cannot use logging.StreamHandler with \'sys.stdout\' nor '
+                                                         '\'sys.stderr\' because those are reserved by the logger '
+                                                         'process',
+                                                    level=logging.CRITICAL))
+                    continue
+
+                self.log.addHandler(hdlr=handler)
 
         # Do not clear exceptions if the user changes the configuration during runtime
         if self.exceptions:
@@ -166,17 +227,24 @@ class MultiprocessingLogger(Process):
         The main loop for the logger process. Will receive remote processes orders one by one and wait for the next one.
         Then return from this method when the main application calls for exit, which is a regular command.
         """
-        # Initialize the logging.log
+        # Initialize the file logger
         self.log = getLogger()
 
-        file_handler = RotatingFileHandler('logging.log',
-                                           maxBytes=10485760,  # 10 MB
-                                           backupCount=5)
-        file_handler.setFormatter(Formatter('%(asctime)s [%(levelname)s] %(message)s'))
+        # Deserialize configuration
+        self.set_config_command = dill.loads(self.set_config_command)
+        self.set_configuration(self.set_config_command)
 
-        self.log.addHandler(file_handler)
+        for handler in self.file_handlers:
+            if isinstance(handler, StreamHandler)\
+                    and (handler.stream == sys.stdout or handler.stream == sys.stderr):
+                self.critical(LogMessageCommand(text='Cannot use logging.StreamHandler with \'sys.stdout\' nor '
+                                                     '\'sys.stderr\' because those are reserved by the logger process',
+                                                level=logging.CRITICAL))
+                continue
 
-        self.log.setLevel(logging.INFO)
+            self.log.addHandler(hdlr=handler)
+
+        self.log.setLevel(self.console_level)
 
         while True:
             o = dill.loads(self.queue.get())
@@ -359,7 +427,7 @@ class MultiprocessingLogger(Process):
                 elif millis() - task.timeout_chrono >= self.task_millis_to_removal:
                     self.to_delete.append(task_id)
 
-            # Redraw the task's progress bar
+            # Redraw the task's progress bar through standard output
             self.print_progress_bar(task=task)
 
         # Keep space for future tasks if needed
@@ -373,7 +441,7 @@ class MultiprocessingLogger(Process):
             if self.permanent_progressbar_slots > 0 or len(self.tasks) > 0:
                 sys.stdout.write('\n\n')
 
-            # Print all the last log messages
+            # Print all the last log messages through standard output
             for m in self.messages:
                 sys.stdout.write(m)
 
@@ -382,9 +450,9 @@ class MultiprocessingLogger(Process):
             if len(self.messages) > 0:
                 sys.stdout.write('\n\n')
 
-            # Print all the exceptions
+            # Print all the exceptions through error output
             for ex in self.exceptions:
-                sys.stdout.write(ex)
+                sys.stderr.write(ex)
 
     def append_message(self,
                        message):
@@ -432,13 +500,19 @@ class MultiprocessingLogger(Process):
         self.changes_made = True
         self.redraw()
 
-    @staticmethod
-    def current_timestamp():
+    def now(self):
         """
         Gets the current timestamp.
-        :return: The timestamp string to append to log messages.
+        :return: The timestamp string to append to log messages according to user-defined format 'console_format_strftime'.
         """
-        return time.strftime('%d %B %Y %H:%M:%S').lower()
+        return time.strftime(self.console_format_strftime)
+
+    def get_format(self):
+        """
+        Resolves console format generic variables such as time.
+        :return:    The pre-formatted logging text.
+        """
+        return self.console_format.replace('{T}', self.now())
 
     def set_level(self, command):
         """
@@ -448,7 +522,7 @@ class MultiprocessingLogger(Process):
         if not command.console_only:
             self.log.setLevel(command.level)
 
-        self.level = command.level
+        self.console_level = command.level
 
     def set_task(self, command):
         """
@@ -488,8 +562,12 @@ class MultiprocessingLogger(Process):
         immediately (may produce flickering) then call 'flush' method.
         :param command: The command object that holds all the necessary information from the remote process.
         """
-        if self.level == logging.DEBUG:
-            message = '{} [{}]\t{}\n'.format(self.current_timestamp(), 'DEBUG', command.text)
+        if self.console_level == logging.DEBUG:
+
+            message = self.get_format()
+            message = message.replace('{L}', 'DEBUG')
+            message = '{}\t{}\n'.format(message, command.text)
+
             self.append_message(message)
 
             # Redraw
@@ -507,10 +585,13 @@ class MultiprocessingLogger(Process):
         immediately (may produce flickering) then call 'flush' method.
         :param command: The command object that holds all the necessary information from the remote process.
         """
-        if (self.level == logging.DEBUG
-                or self.level == logging.INFO):
+        if (self.console_level == logging.DEBUG
+                or self.console_level == logging.INFO):
 
-            message = '{} [{}]\t{}\n'.format(self.current_timestamp(), 'INFO', command.text)
+            message = self.get_format()
+            message = message.replace('{L}', 'INFO')
+            message = '{}\t{}\n'.format(message, command.text)
+
             self.append_message(message)
 
             # Redraw
@@ -528,11 +609,14 @@ class MultiprocessingLogger(Process):
         immediately (may produce flickering) then call 'flush' method.
         :param command: The command object that holds all the necessary information from the remote process.
         """
-        if (self.level == logging.DEBUG
-                or self.level == logging.INFO
-                or self.level == logging.WARNING):
+        if (self.console_level == logging.DEBUG
+                or self.console_level == logging.INFO
+                or self.console_level == logging.WARNING):
 
-            message = '{} [{}]\t{}\n'.format(self.current_timestamp(), 'WARNING', command.text)
+            message = self.get_format()
+            message = message.replace('{L}', 'WARNING')
+            message = '{}\t{}\n'.format(message, command.text)
+
             self.append_message(message)
 
             # Redraw
@@ -550,12 +634,15 @@ class MultiprocessingLogger(Process):
         immediately (may produce flickering) then call 'flush' method.
         :param command: The command object that holds all the necessary information from the remote process.
         """
-        if (self.level == logging.DEBUG
-                or self.level == logging.INFO
-                or self.level == logging.WARNING
-                or self.level == logging.ERROR):
+        if (self.console_level == logging.DEBUG
+                or self.console_level == logging.INFO
+                or self.console_level == logging.WARNING
+                or self.console_level == logging.ERROR):
 
-            message = '{} [{}]\t{}\n'.format(self.current_timestamp(), 'ERROR', command.text)
+            message = self.get_format()
+            message = message.replace('{L}', 'ERROR')
+            message = '{}\t{}\n'.format(message, command.text)
+
             self.append_message(message)
 
             # Redraw
@@ -573,13 +660,16 @@ class MultiprocessingLogger(Process):
         immediately (may produce flickering) then call 'flush' method.
         :param command: The command object that holds all the necessary information from the remote process.
         """
-        if (self.level == logging.DEBUG
-                or self.level == logging.INFO
-                or self.level == logging.WARNING
-                or self.level == logging.ERROR
-                or self.level == logging.CRITICAL):
+        if (self.console_level == logging.DEBUG
+                or self.console_level == logging.INFO
+                or self.console_level == logging.WARNING
+                or self.console_level == logging.ERROR
+                or self.console_level == logging.CRITICAL):
 
-            message = '{} [{}]\t{}\n'.format(self.current_timestamp(), 'CRITICAL', command.text)
+            message = self.get_format()
+            message = message.replace('{L}', 'CRITICAL')
+            message = '{}\t{}\n'.format(message, command.text)
+
             self.append_message(message)
 
             # Redraw
@@ -593,11 +683,18 @@ class MultiprocessingLogger(Process):
         Posts an exception's stacktrace string as returned by 'traceback.format_exc()' in an 'except' block.
         :param command: The command object that holds all the necessary information from the remote process.
         """
-        message = '{} [{}]\t[Process {}{}]:\n{}\n'.format(self.current_timestamp(), 'EXCEPTION', command.pid, ' - {}'.format(command.process_title) if command.process_title else '', command.stacktrace)
+        exception_message = '[Process {}{}]:\n{}'.format(command.pid, ' - {}'
+                                                        .format(command.process_title) if command.process_title else '',
+                                                        command.stacktrace)
+
+        message = self.get_format()
+        message = message.replace('{L}', 'EXCEPTION')
+        message = '{}\t{}\n'.format(message, exception_message)
+
         self.append_exception(message)
 
         # Redraw
         self.changes_made = True
         self.redraw()
 
-        self.log.critical('\t{}'.format(message))
+        self.log.critical('\t{}'.format(exception_message))

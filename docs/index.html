@@ -1035,11 +1035,15 @@ table {
 # coding: utf-8
 
 import logging
+import os
 import time
 import uuid
-import dill
-import os
+from logging import Formatter
+from logging.handlers import RotatingFileHandler
 from multiprocessing import Queue
+from time import strftime
+
+import dill
 
 from .commands import *
 from .processing import MultiprocessingLogger
@@ -1061,17 +1065,19 @@ class TaskProgress(object):
                  display_time=False):
         """
         Creates a new progress bar using the given information.
-        :param total:           The total number of iteration for this progress bar.
-        :param prefix:          [Optional] The text that should be displayed at the left side of the progress bar. Note
-                                that progress bars will always stay left-aligned at the shortest possible.
-        :param suffix:          [Optional] The text that should be displayed at the very right side of the progress bar.
-        :param decimals:        [Optional] The number of decimals to display for the percentage.
-        :param bar_length:      [Optional] The graphical bar size displayed on screen. Unit is character.
-        :param keep_alive:      [Optional] Specify whether the progress bar should stay displayed forever once completed
-                                or if it should vanish.
-        :param display_time:    [Optional] Specify whether the duration since the progress has begun should be
-                                displayed. Running time will be displayed between parenthesis, whereas it will be
-                                displayed between brackets when the progress has completed.
+        :param total:                       The total number of iteration for this progress bar.
+        :param prefix:                      [Optional] The text that should be displayed at the left side of the
+                                            progress bar. Note that progress bars will always stay left-aligned at the
+                                            shortest possible.
+        :param suffix:                      [Optional] The text that should be displayed at the very right side of the
+                                            progress bar.
+        :param decimals:                    [Optional] The number of decimals to display for the percentage.
+        :param bar_length:                  [Optional] The graphical bar size displayed on screen. Unit is character.
+        :param keep_alive:                  [Optional] Specify whether the progress bar should stay displayed forever
+                                            once completed or if it should vanish.
+        :param display_time:                [Optional] Specify whether the duration since the progress has begun should
+                                            be displayed. Running time will be displayed between parenthesis, whereas it
+                                            will be displayed between brackets when the progress has completed.
         """
         super(TaskProgress, self).__init__()
 
@@ -1147,14 +1153,24 @@ class FancyLogger(object):
     "Default value for the logger configuration."
     default_task_millis_to_removal = 500
     "Default value for the logger configuration."
+    default_console_format_strftime = '%d %B %Y %H:%M:%S'
+    "Default value for the logger configuration."
+    default_console_format = '{T} [{L}]'
+    "Default value for the logger configuration."
+    default_file_handlers = []
+    "Default value for the logger configuration. Filled in constructor."
 
     def __init__(self,
                  message_number=default_message_number,
                  exception_number=default_exception_number,
                  permanent_progressbar_slots=default_permanent_progressbar_slots,
                  redraw_frequency_millis=default_redraw_frequency_millis,
-                 level=default_level,
-                 task_millis_to_removal=default_task_millis_to_removal):
+                 console_level=default_level,
+                 task_millis_to_removal=default_task_millis_to_removal,
+                 console_format_strftime=default_console_format_strftime,
+                 console_format=default_console_format,
+                 file_handlers=None,
+                 application_name=None):
         """
         Initializes a new logger and starts its process immediately using given configuration.
         :param message_number:              [Optional] Number of simultaneously displayed messages below progress bars.
@@ -1164,22 +1180,63 @@ class FancyLogger(object):
                                             lower than this parameter.
         :param redraw_frequency_millis:     [Optional] Minimum time lapse in milliseconds between two redraws. It may be
                                             more because the redraw rate depends upon time AND method calls.
-        :param level:                       [Optional] The logging level (from standard logging module).
+        :param console_level:               [Optional] The logging level (from standard logging module).
         :param task_millis_to_removal:      [Optional] Minimum time lapse in milliseconds at maximum completion before
                                             a progress bar is removed from display. The progress bar may vanish at a
                                             further time as the redraw rate depends upon time AND method calls.
+        :param console_format_strftime:     [Optional] Specify the time format for console log lines using python
+                                            strftime format. Defaults to format: '29 november 2016 21:52:12'.
+        :param console_format:              [Optional] Specify the format of the console log lines. There are two
+                                            variables available: {T} for timestamp, {L} for level. Will then add some
+                                            tabulations in order to align text beginning for all levels.
+                                            Defaults to format: '{T} [{L}]'
+                                            Which will produce: '29 november 2016 21:52:12 [INFO]      my log text'
+                                                                '29 november 2016 21:52:13 [WARNING]   my log text'
+                                                                '29 november 2016 21:52:14 [DEBUG]     my log text'
+        :param file_handlers:               [Optional] Specify the file handlers to use. Each file handler will use its
+                                            own regular formatter and level. Console logging is distinct from file
+                                            logging. Console logging uses custom stdout formatting, while file logging
+                                            uses regular python logging rules. All handlers are permitted except
+                                            StreamHandler if used with stdout or stderr which are reserved by this
+                                            library for custom console output.
+        :param application_name:            [Optional] Used only if 'file_handlers' parameter is ignored. Specifies the
+                                            application name to use to format the default file logger using format:
+                                            application_%Y-%m-%d_%H-%M-%S.log
         """
         super(FancyLogger, self).__init__()
+
+        # Define default file handlers
+        if not file_handlers:
+            if not application_name:
+                app_name = 'application'
+            else:
+                app_name = application_name
+
+            handler = RotatingFileHandler(filename=os.path.join(os.getcwd(), '{}_{}.log'
+                                                                .format(app_name, strftime('%Y-%m-%d_%H-%M-%S'))),
+                                          encoding='utf8',
+                                          maxBytes=5242880,  # 5 MB
+                                          backupCount=10,
+                                          delay=True)
+            handler.setLevel(logging.INFO)
+            handler.setFormatter(fmt=Formatter(fmt='%(asctime)s [%(levelname)s]\t%(message)s',
+                                               datefmt=self.default_console_format_strftime))
+            self.default_file_handlers.append(handler)
+
+            file_handlers = self.default_file_handlers
 
         if not self.queue:
             self.queue = Queue()
             self.process = MultiprocessingLogger(queue=self.queue,
-                                                 level=level,
+                                                 console_level=console_level,
                                                  message_number=message_number,
                                                  exception_number=exception_number,
                                                  permanent_progressbar_slots=permanent_progressbar_slots,
                                                  redraw_frequency_millis=redraw_frequency_millis,
-                                                 task_millis_to_removal=task_millis_to_removal)
+                                                 task_millis_to_removal=task_millis_to_removal,
+                                                 console_format_strftime=console_format_strftime,
+                                                 console_format=console_format,
+                                                 file_handlers=file_handlers)
             self.process.start()
 
     def flush(self):
@@ -1205,8 +1262,11 @@ class FancyLogger(object):
                           exception_number=default_exception_number,
                           permanent_progressbar_slots=default_permanent_progressbar_slots,
                           redraw_frequency_millis=default_redraw_frequency_millis,
-                          level=default_level,
-                          task_millis_to_removal=default_task_millis_to_removal):
+                          console_level=default_level,
+                          task_millis_to_removal=default_task_millis_to_removal,
+                          console_format_strftime=default_console_format_strftime,
+                          console_format=default_console_format,
+                          file_handlers=default_file_handlers):
         """
         Defines the current configuration of the logger. Can be used at any moment during runtime to modify the logger
         behavior.
@@ -1217,17 +1277,35 @@ class FancyLogger(object):
                                             lower than this parameter.
         :param redraw_frequency_millis:     [Optional] Minimum time lapse in milliseconds between two redraws. It may be
                                             more because the redraw rate depends upon time AND method calls.
-        :param level:                       [Optional] The logging level (from standard logging module).
+        :param console_level:               [Optional] The logging level (from standard logging module).
         :param task_millis_to_removal:      [Optional] Minimum time lapse in milliseconds at maximum completion before
                                             a progress bar is removed from display. The progress bar may vanish at a
                                             further time as the redraw rate depends upon time AND method calls.
+        :param console_format_strftime:     [Optional] Specify the time format for console log lines using python
+                                            strftime format. Defaults to format: '29 november 2016 21:52:12'.
+        :param console_format:              [Optional] Specify the format of the console log lines. There are two
+                                            variables available: {T} for timestamp, {L} for level. Will then add some
+                                            tabulations in order to align text beginning for all levels.
+                                            Defaults to format: '{T} [{L}]'
+                                            Which will produce: '29 november 2016 21:52:12 [INFO]      my log text'
+                                                                '29 november 2016 21:52:13 [WARNING]   my log text'
+                                                                '29 november 2016 21:52:14 [DEBUG]     my log text'
+        :param file_handlers:               [Optional] Specify the file handlers to use. Each file handler will use its
+                                            own regular formatter and level. Console logging is distinct from file
+                                            logging. Console logging uses custom stdout formatting, while file logging
+                                            uses regular python logging rules. All handlers are permitted except
+                                            StreamHandler if used with stdout or stderr which are reserved by this
+                                            library for custom console output.
         """
         self.queue.put(dill.dumps(SetConfigurationCommand(task_millis_to_removal=task_millis_to_removal,
-                                                          level=level,
+                                                          console_level=console_level,
                                                           permanent_progressbar_slots=permanent_progressbar_slots,
                                                           message_number=message_number,
                                                           exception_number=exception_number,
-                                                          redraw_frequency_millis=redraw_frequency_millis)))
+                                                          redraw_frequency_millis=redraw_frequency_millis,
+                                                          console_format_strftime=console_format_strftime,
+                                                          console_format=console_format,
+                                                          file_handlers=file_handlers)))
 
     def set_level(self,
                   level,
@@ -1470,14 +1548,24 @@ Logger uses one file handler and then uses standard output (stdout) to draw on s
     "Default value for the logger configuration."
     default_task_millis_to_removal = 500
     "Default value for the logger configuration."
+    default_console_format_strftime = '%d %B %Y %H:%M:%S'
+    "Default value for the logger configuration."
+    default_console_format = '{T} [{L}]'
+    "Default value for the logger configuration."
+    default_file_handlers = []
+    "Default value for the logger configuration. Filled in constructor."
 
     def __init__(self,
                  message_number=default_message_number,
                  exception_number=default_exception_number,
                  permanent_progressbar_slots=default_permanent_progressbar_slots,
                  redraw_frequency_millis=default_redraw_frequency_millis,
-                 level=default_level,
-                 task_millis_to_removal=default_task_millis_to_removal):
+                 console_level=default_level,
+                 task_millis_to_removal=default_task_millis_to_removal,
+                 console_format_strftime=default_console_format_strftime,
+                 console_format=default_console_format,
+                 file_handlers=None,
+                 application_name=None):
         """
         Initializes a new logger and starts its process immediately using given configuration.
         :param message_number:              [Optional] Number of simultaneously displayed messages below progress bars.
@@ -1487,22 +1575,63 @@ Logger uses one file handler and then uses standard output (stdout) to draw on s
                                             lower than this parameter.
         :param redraw_frequency_millis:     [Optional] Minimum time lapse in milliseconds between two redraws. It may be
                                             more because the redraw rate depends upon time AND method calls.
-        :param level:                       [Optional] The logging level (from standard logging module).
+        :param console_level:               [Optional] The logging level (from standard logging module).
         :param task_millis_to_removal:      [Optional] Minimum time lapse in milliseconds at maximum completion before
                                             a progress bar is removed from display. The progress bar may vanish at a
                                             further time as the redraw rate depends upon time AND method calls.
+        :param console_format_strftime:     [Optional] Specify the time format for console log lines using python
+                                            strftime format. Defaults to format: '29 november 2016 21:52:12'.
+        :param console_format:              [Optional] Specify the format of the console log lines. There are two
+                                            variables available: {T} for timestamp, {L} for level. Will then add some
+                                            tabulations in order to align text beginning for all levels.
+                                            Defaults to format: '{T} [{L}]'
+                                            Which will produce: '29 november 2016 21:52:12 [INFO]      my log text'
+                                                                '29 november 2016 21:52:13 [WARNING]   my log text'
+                                                                '29 november 2016 21:52:14 [DEBUG]     my log text'
+        :param file_handlers:               [Optional] Specify the file handlers to use. Each file handler will use its
+                                            own regular formatter and level. Console logging is distinct from file
+                                            logging. Console logging uses custom stdout formatting, while file logging
+                                            uses regular python logging rules. All handlers are permitted except
+                                            StreamHandler if used with stdout or stderr which are reserved by this
+                                            library for custom console output.
+        :param application_name:            [Optional] Used only if 'file_handlers' parameter is ignored. Specifies the
+                                            application name to use to format the default file logger using format:
+                                            application_%Y-%m-%d_%H-%M-%S.log
         """
         super(FancyLogger, self).__init__()
+
+        # Define default file handlers
+        if not file_handlers:
+            if not application_name:
+                app_name = 'application'
+            else:
+                app_name = application_name
+
+            handler = RotatingFileHandler(filename=os.path.join(os.getcwd(), '{}_{}.log'
+                                                                .format(app_name, strftime('%Y-%m-%d_%H-%M-%S'))),
+                                          encoding='utf8',
+                                          maxBytes=5242880,  # 5 MB
+                                          backupCount=10,
+                                          delay=True)
+            handler.setLevel(logging.INFO)
+            handler.setFormatter(fmt=Formatter(fmt='%(asctime)s [%(levelname)s]\t%(message)s',
+                                               datefmt=self.default_console_format_strftime))
+            self.default_file_handlers.append(handler)
+
+            file_handlers = self.default_file_handlers
 
         if not self.queue:
             self.queue = Queue()
             self.process = MultiprocessingLogger(queue=self.queue,
-                                                 level=level,
+                                                 console_level=console_level,
                                                  message_number=message_number,
                                                  exception_number=exception_number,
                                                  permanent_progressbar_slots=permanent_progressbar_slots,
                                                  redraw_frequency_millis=redraw_frequency_millis,
-                                                 task_millis_to_removal=task_millis_to_removal)
+                                                 task_millis_to_removal=task_millis_to_removal,
+                                                 console_format_strftime=console_format_strftime,
+                                                 console_format=console_format,
+                                                 file_handlers=file_handlers)
             self.process.start()
 
     def flush(self):
@@ -1528,8 +1657,11 @@ Logger uses one file handler and then uses standard output (stdout) to draw on s
                           exception_number=default_exception_number,
                           permanent_progressbar_slots=default_permanent_progressbar_slots,
                           redraw_frequency_millis=default_redraw_frequency_millis,
-                          level=default_level,
-                          task_millis_to_removal=default_task_millis_to_removal):
+                          console_level=default_level,
+                          task_millis_to_removal=default_task_millis_to_removal,
+                          console_format_strftime=default_console_format_strftime,
+                          console_format=default_console_format,
+                          file_handlers=default_file_handlers):
         """
         Defines the current configuration of the logger. Can be used at any moment during runtime to modify the logger
         behavior.
@@ -1540,17 +1672,35 @@ Logger uses one file handler and then uses standard output (stdout) to draw on s
                                             lower than this parameter.
         :param redraw_frequency_millis:     [Optional] Minimum time lapse in milliseconds between two redraws. It may be
                                             more because the redraw rate depends upon time AND method calls.
-        :param level:                       [Optional] The logging level (from standard logging module).
+        :param console_level:               [Optional] The logging level (from standard logging module).
         :param task_millis_to_removal:      [Optional] Minimum time lapse in milliseconds at maximum completion before
                                             a progress bar is removed from display. The progress bar may vanish at a
                                             further time as the redraw rate depends upon time AND method calls.
+        :param console_format_strftime:     [Optional] Specify the time format for console log lines using python
+                                            strftime format. Defaults to format: '29 november 2016 21:52:12'.
+        :param console_format:              [Optional] Specify the format of the console log lines. There are two
+                                            variables available: {T} for timestamp, {L} for level. Will then add some
+                                            tabulations in order to align text beginning for all levels.
+                                            Defaults to format: '{T} [{L}]'
+                                            Which will produce: '29 november 2016 21:52:12 [INFO]      my log text'
+                                                                '29 november 2016 21:52:13 [WARNING]   my log text'
+                                                                '29 november 2016 21:52:14 [DEBUG]     my log text'
+        :param file_handlers:               [Optional] Specify the file handlers to use. Each file handler will use its
+                                            own regular formatter and level. Console logging is distinct from file
+                                            logging. Console logging uses custom stdout formatting, while file logging
+                                            uses regular python logging rules. All handlers are permitted except
+                                            StreamHandler if used with stdout or stderr which are reserved by this
+                                            library for custom console output.
         """
         self.queue.put(dill.dumps(SetConfigurationCommand(task_millis_to_removal=task_millis_to_removal,
-                                                          level=level,
+                                                          console_level=console_level,
                                                           permanent_progressbar_slots=permanent_progressbar_slots,
                                                           message_number=message_number,
                                                           exception_number=exception_number,
-                                                          redraw_frequency_millis=redraw_frequency_millis)))
+                                                          redraw_frequency_millis=redraw_frequency_millis,
+                                                          console_format_strftime=console_format_strftime,
+                                                          console_format=console_format,
+                                                          file_handlers=file_handlers)))
 
     def set_level(self,
                   level,
@@ -1759,12 +1909,45 @@ Logger uses one file handler and then uses standard output (stdout) to draw on s
           </ul>
           <h3>Class variables</h3>
             <div class="item">
+            <p id="FancyLogger.FancyLogger.default_console_format" class="name">var <span class="ident">default_console_format</span></p>
+            
+
+            
+  
+    <div class="desc"><p>Default value for the logger configuration.</p></div>
+  <div class="source_cont">
+</div>
+
+            </div>
+            <div class="item">
+            <p id="FancyLogger.FancyLogger.default_console_format_strftime" class="name">var <span class="ident">default_console_format_strftime</span></p>
+            
+
+            
+  
+    <div class="desc"><p>Default value for the logger configuration.</p></div>
+  <div class="source_cont">
+</div>
+
+            </div>
+            <div class="item">
             <p id="FancyLogger.FancyLogger.default_exception_number" class="name">var <span class="ident">default_exception_number</span></p>
             
 
             
   
     <div class="desc"><p>Default value for the logger configuration.</p></div>
+  <div class="source_cont">
+</div>
+
+            </div>
+            <div class="item">
+            <p id="FancyLogger.FancyLogger.default_file_handlers" class="name">var <span class="ident">default_file_handlers</span></p>
+            
+
+            
+  
+    <div class="desc"><p>Default value for the logger configuration. Filled in constructor.</p></div>
   <div class="source_cont">
 </div>
 
@@ -1839,7 +2022,7 @@ Logger uses one file handler and then uses standard output (stdout) to draw on s
             
   <div class="item">
     <div class="name def" id="FancyLogger.FancyLogger.__init__">
-    <p>def <span class="ident">__init__</span>(</p><p>self, message_number=20, exception_number=5, permanent_progressbar_slots=0, redraw_frequency_millis=500, level=20, task_millis_to_removal=500)</p>
+    <p>def <span class="ident">__init__</span>(</p><p>self, message_number=20, exception_number=5, permanent_progressbar_slots=0, redraw_frequency_millis=500, console_level=20, task_millis_to_removal=500, console_format_strftime=&#39;%d %B %Y %H:%M:%S&#39;, console_format=&#39;{T} [{L}]&#39;, file_handlers=None, application_name=None)</p>
     </div>
     
 
@@ -1853,10 +2036,28 @@ Logger uses one file handler and then uses standard output (stdout) to draw on s
                                     lower than this parameter.
 :param redraw_frequency_millis:     [Optional] Minimum time lapse in milliseconds between two redraws. It may be
                                     more because the redraw rate depends upon time AND method calls.
-:param level:                       [Optional] The logging level (from standard logging module).
+:param console_level:               [Optional] The logging level (from standard logging module).
 :param task_millis_to_removal:      [Optional] Minimum time lapse in milliseconds at maximum completion before
                                     a progress bar is removed from display. The progress bar may vanish at a
-                                    further time as the redraw rate depends upon time AND method calls.</p></div>
+                                    further time as the redraw rate depends upon time AND method calls.
+:param console_format_strftime:     [Optional] Specify the time format for console log lines using python
+                                    strftime format. Defaults to format: '29 november 2016 21:52:12'.
+:param console_format:              [Optional] Specify the format of the console log lines. There are two
+                                    variables available: {T} for timestamp, {L} for level. Will then add some
+                                    tabulations in order to align text beginning for all levels.
+                                    Defaults to format: '{T} [{L}]'
+                                    Which will produce: '29 november 2016 21:52:12 [INFO]      my log text'
+                                                        '29 november 2016 21:52:13 [WARNING]   my log text'
+                                                        '29 november 2016 21:52:14 [DEBUG]     my log text'
+:param file_handlers:               [Optional] Specify the file handlers to use. Each file handler will use its
+                                    own regular formatter and level. Console logging is distinct from file
+                                    logging. Console logging uses custom stdout formatting, while file logging
+                                    uses regular python logging rules. All handlers are permitted except
+                                    StreamHandler if used with stdout or stderr which are reserved by this
+                                    library for custom console output.
+:param application_name:            [Optional] Used only if 'file_handlers' parameter is ignored. Specifies the
+                                    application name to use to format the default file logger using format:
+                                    application_%Y-%m-%d_%H-%M-%S.log</p></div>
   <div class="source_cont">
   <p class="source_link"><a href="javascript:void(0);" onclick="toggle('source-FancyLogger.FancyLogger.__init__', this);">Show source &equiv;</a></p>
   <div id="source-FancyLogger.FancyLogger.__init__" class="source">
@@ -1865,8 +2066,12 @@ Logger uses one file handler and then uses standard output (stdout) to draw on s
              exception_number=default_exception_number,
              permanent_progressbar_slots=default_permanent_progressbar_slots,
              redraw_frequency_millis=default_redraw_frequency_millis,
-             level=default_level,
-             task_millis_to_removal=default_task_millis_to_removal):
+             console_level=default_level,
+             task_millis_to_removal=default_task_millis_to_removal,
+             console_format_strftime=default_console_format_strftime,
+             console_format=default_console_format,
+             file_handlers=None,
+             application_name=None):
     """
     Initializes a new logger and starts its process immediately using given configuration.
     :param message_number:              [Optional] Number of simultaneously displayed messages below progress bars.
@@ -1876,21 +2081,59 @@ Logger uses one file handler and then uses standard output (stdout) to draw on s
                                         lower than this parameter.
     :param redraw_frequency_millis:     [Optional] Minimum time lapse in milliseconds between two redraws. It may be
                                         more because the redraw rate depends upon time AND method calls.
-    :param level:                       [Optional] The logging level (from standard logging module).
+    :param console_level:               [Optional] The logging level (from standard logging module).
     :param task_millis_to_removal:      [Optional] Minimum time lapse in milliseconds at maximum completion before
                                         a progress bar is removed from display. The progress bar may vanish at a
                                         further time as the redraw rate depends upon time AND method calls.
+    :param console_format_strftime:     [Optional] Specify the time format for console log lines using python
+                                        strftime format. Defaults to format: '29 november 2016 21:52:12'.
+    :param console_format:              [Optional] Specify the format of the console log lines. There are two
+                                        variables available: {T} for timestamp, {L} for level. Will then add some
+                                        tabulations in order to align text beginning for all levels.
+                                        Defaults to format: '{T} [{L}]'
+                                        Which will produce: '29 november 2016 21:52:12 [INFO]      my log text'
+                                                            '29 november 2016 21:52:13 [WARNING]   my log text'
+                                                            '29 november 2016 21:52:14 [DEBUG]     my log text'
+    :param file_handlers:               [Optional] Specify the file handlers to use. Each file handler will use its
+                                        own regular formatter and level. Console logging is distinct from file
+                                        logging. Console logging uses custom stdout formatting, while file logging
+                                        uses regular python logging rules. All handlers are permitted except
+                                        StreamHandler if used with stdout or stderr which are reserved by this
+                                        library for custom console output.
+    :param application_name:            [Optional] Used only if 'file_handlers' parameter is ignored. Specifies the
+                                        application name to use to format the default file logger using format:
+                                        application_%Y-%m-%d_%H-%M-%S.log
     """
     super(FancyLogger, self).__init__()
+    # Define default file handlers
+    if not file_handlers:
+        if not application_name:
+            app_name = 'application'
+        else:
+            app_name = application_name
+        handler = RotatingFileHandler(filename=os.path.join(os.getcwd(), '{}_{}.log'
+                                                            .format(app_name, strftime('%Y-%m-%d_%H-%M-%S'))),
+                                      encoding='utf8',
+                                      maxBytes=5242880,  # 5 MB
+                                      backupCount=10,
+                                      delay=True)
+        handler.setLevel(logging.INFO)
+        handler.setFormatter(fmt=Formatter(fmt='%(asctime)s [%(levelname)s]\t%(message)s',
+                                           datefmt=self.default_console_format_strftime))
+        self.default_file_handlers.append(handler)
+        file_handlers = self.default_file_handlers
     if not self.queue:
         self.queue = Queue()
         self.process = MultiprocessingLogger(queue=self.queue,
-                                             level=level,
+                                             console_level=console_level,
                                              message_number=message_number,
                                              exception_number=exception_number,
                                              permanent_progressbar_slots=permanent_progressbar_slots,
                                              redraw_frequency_millis=redraw_frequency_millis,
-                                             task_millis_to_removal=task_millis_to_removal)
+                                             task_millis_to_removal=task_millis_to_removal,
+                                             console_format_strftime=console_format_strftime,
+                                             console_format=console_format,
+                                             file_handlers=file_handlers)
         self.process.start()
 </code></pre>
   </div>
@@ -2111,7 +2354,7 @@ immediately (may produce flickering) then call 'flush' method.
             
   <div class="item">
     <div class="name def" id="FancyLogger.FancyLogger.set_configuration">
-    <p>def <span class="ident">set_configuration</span>(</p><p>self, message_number=20, exception_number=5, permanent_progressbar_slots=0, redraw_frequency_millis=500, level=20, task_millis_to_removal=500)</p>
+    <p>def <span class="ident">set_configuration</span>(</p><p>self, message_number=20, exception_number=5, permanent_progressbar_slots=0, redraw_frequency_millis=500, console_level=20, task_millis_to_removal=500, console_format_strftime=&#39;%d %B %Y %H:%M:%S&#39;, console_format=&#39;{T} [{L}]&#39;, file_handlers=[])</p>
     </div>
     
 
@@ -2126,10 +2369,25 @@ behavior.
                                     lower than this parameter.
 :param redraw_frequency_millis:     [Optional] Minimum time lapse in milliseconds between two redraws. It may be
                                     more because the redraw rate depends upon time AND method calls.
-:param level:                       [Optional] The logging level (from standard logging module).
+:param console_level:               [Optional] The logging level (from standard logging module).
 :param task_millis_to_removal:      [Optional] Minimum time lapse in milliseconds at maximum completion before
                                     a progress bar is removed from display. The progress bar may vanish at a
-                                    further time as the redraw rate depends upon time AND method calls.</p></div>
+                                    further time as the redraw rate depends upon time AND method calls.
+:param console_format_strftime:     [Optional] Specify the time format for console log lines using python
+                                    strftime format. Defaults to format: '29 november 2016 21:52:12'.
+:param console_format:              [Optional] Specify the format of the console log lines. There are two
+                                    variables available: {T} for timestamp, {L} for level. Will then add some
+                                    tabulations in order to align text beginning for all levels.
+                                    Defaults to format: '{T} [{L}]'
+                                    Which will produce: '29 november 2016 21:52:12 [INFO]      my log text'
+                                                        '29 november 2016 21:52:13 [WARNING]   my log text'
+                                                        '29 november 2016 21:52:14 [DEBUG]     my log text'
+:param file_handlers:               [Optional] Specify the file handlers to use. Each file handler will use its
+                                    own regular formatter and level. Console logging is distinct from file
+                                    logging. Console logging uses custom stdout formatting, while file logging
+                                    uses regular python logging rules. All handlers are permitted except
+                                    StreamHandler if used with stdout or stderr which are reserved by this
+                                    library for custom console output.</p></div>
   <div class="source_cont">
   <p class="source_link"><a href="javascript:void(0);" onclick="toggle('source-FancyLogger.FancyLogger.set_configuration', this);">Show source &equiv;</a></p>
   <div id="source-FancyLogger.FancyLogger.set_configuration" class="source">
@@ -2138,8 +2396,11 @@ behavior.
                       exception_number=default_exception_number,
                       permanent_progressbar_slots=default_permanent_progressbar_slots,
                       redraw_frequency_millis=default_redraw_frequency_millis,
-                      level=default_level,
-                      task_millis_to_removal=default_task_millis_to_removal):
+                      console_level=default_level,
+                      task_millis_to_removal=default_task_millis_to_removal,
+                      console_format_strftime=default_console_format_strftime,
+                      console_format=default_console_format,
+                      file_handlers=default_file_handlers):
     """
     Defines the current configuration of the logger. Can be used at any moment during runtime to modify the logger
     behavior.
@@ -2150,17 +2411,35 @@ behavior.
                                         lower than this parameter.
     :param redraw_frequency_millis:     [Optional] Minimum time lapse in milliseconds between two redraws. It may be
                                         more because the redraw rate depends upon time AND method calls.
-    :param level:                       [Optional] The logging level (from standard logging module).
+    :param console_level:               [Optional] The logging level (from standard logging module).
     :param task_millis_to_removal:      [Optional] Minimum time lapse in milliseconds at maximum completion before
                                         a progress bar is removed from display. The progress bar may vanish at a
                                         further time as the redraw rate depends upon time AND method calls.
+    :param console_format_strftime:     [Optional] Specify the time format for console log lines using python
+                                        strftime format. Defaults to format: '29 november 2016 21:52:12'.
+    :param console_format:              [Optional] Specify the format of the console log lines. There are two
+                                        variables available: {T} for timestamp, {L} for level. Will then add some
+                                        tabulations in order to align text beginning for all levels.
+                                        Defaults to format: '{T} [{L}]'
+                                        Which will produce: '29 november 2016 21:52:12 [INFO]      my log text'
+                                                            '29 november 2016 21:52:13 [WARNING]   my log text'
+                                                            '29 november 2016 21:52:14 [DEBUG]     my log text'
+    :param file_handlers:               [Optional] Specify the file handlers to use. Each file handler will use its
+                                        own regular formatter and level. Console logging is distinct from file
+                                        logging. Console logging uses custom stdout formatting, while file logging
+                                        uses regular python logging rules. All handlers are permitted except
+                                        StreamHandler if used with stdout or stderr which are reserved by this
+                                        library for custom console output.
     """
     self.queue.put(dill.dumps(SetConfigurationCommand(task_millis_to_removal=task_millis_to_removal,
-                                                      level=level,
+                                                      console_level=console_level,
                                                       permanent_progressbar_slots=permanent_progressbar_slots,
                                                       message_number=message_number,
                                                       exception_number=exception_number,
-                                                      redraw_frequency_millis=redraw_frequency_millis)))
+                                                      redraw_frequency_millis=redraw_frequency_millis,
+                                                      console_format_strftime=console_format_strftime,
+                                                      console_format=console_format,
+                                                      file_handlers=file_handlers)))
 </code></pre>
   </div>
 </div>
@@ -2463,17 +2742,19 @@ The logger will iterate over TaskProgress objects to draw progress bars on scree
                  display_time=False):
         """
         Creates a new progress bar using the given information.
-        :param total:           The total number of iteration for this progress bar.
-        :param prefix:          [Optional] The text that should be displayed at the left side of the progress bar. Note
-                                that progress bars will always stay left-aligned at the shortest possible.
-        :param suffix:          [Optional] The text that should be displayed at the very right side of the progress bar.
-        :param decimals:        [Optional] The number of decimals to display for the percentage.
-        :param bar_length:      [Optional] The graphical bar size displayed on screen. Unit is character.
-        :param keep_alive:      [Optional] Specify whether the progress bar should stay displayed forever once completed
-                                or if it should vanish.
-        :param display_time:    [Optional] Specify whether the duration since the progress has begun should be
-                                displayed. Running time will be displayed between parenthesis, whereas it will be
-                                displayed between brackets when the progress has completed.
+        :param total:                       The total number of iteration for this progress bar.
+        :param prefix:                      [Optional] The text that should be displayed at the left side of the
+                                            progress bar. Note that progress bars will always stay left-aligned at the
+                                            shortest possible.
+        :param suffix:                      [Optional] The text that should be displayed at the very right side of the
+                                            progress bar.
+        :param decimals:                    [Optional] The number of decimals to display for the percentage.
+        :param bar_length:                  [Optional] The graphical bar size displayed on screen. Unit is character.
+        :param keep_alive:                  [Optional] Specify whether the progress bar should stay displayed forever
+                                            once completed or if it should vanish.
+        :param display_time:                [Optional] Specify whether the duration since the progress has begun should
+                                            be displayed. Running time will be displayed between parenthesis, whereas it
+                                            will be displayed between brackets when the progress has completed.
         """
         super(TaskProgress, self).__init__()
 
@@ -2545,17 +2826,19 @@ The logger will iterate over TaskProgress objects to draw progress bars on scree
     
   
     <div class="desc"><p>Creates a new progress bar using the given information.
-:param total:           The total number of iteration for this progress bar.
-:param prefix:          [Optional] The text that should be displayed at the left side of the progress bar. Note
-                        that progress bars will always stay left-aligned at the shortest possible.
-:param suffix:          [Optional] The text that should be displayed at the very right side of the progress bar.
-:param decimals:        [Optional] The number of decimals to display for the percentage.
-:param bar_length:      [Optional] The graphical bar size displayed on screen. Unit is character.
-:param keep_alive:      [Optional] Specify whether the progress bar should stay displayed forever once completed
-                        or if it should vanish.
-:param display_time:    [Optional] Specify whether the duration since the progress has begun should be
-                        displayed. Running time will be displayed between parenthesis, whereas it will be
-                        displayed between brackets when the progress has completed.</p></div>
+:param total:                       The total number of iteration for this progress bar.
+:param prefix:                      [Optional] The text that should be displayed at the left side of the
+                                    progress bar. Note that progress bars will always stay left-aligned at the
+                                    shortest possible.
+:param suffix:                      [Optional] The text that should be displayed at the very right side of the
+                                    progress bar.
+:param decimals:                    [Optional] The number of decimals to display for the percentage.
+:param bar_length:                  [Optional] The graphical bar size displayed on screen. Unit is character.
+:param keep_alive:                  [Optional] Specify whether the progress bar should stay displayed forever
+                                    once completed or if it should vanish.
+:param display_time:                [Optional] Specify whether the duration since the progress has begun should
+                                    be displayed. Running time will be displayed between parenthesis, whereas it
+                                    will be displayed between brackets when the progress has completed.</p></div>
   <div class="source_cont">
   <p class="source_link"><a href="javascript:void(0);" onclick="toggle('source-FancyLogger.TaskProgress.__init__', this);">Show source &equiv;</a></p>
   <div id="source-FancyLogger.TaskProgress.__init__" class="source">
@@ -2569,17 +2852,19 @@ The logger will iterate over TaskProgress objects to draw progress bars on scree
              display_time=False):
     """
     Creates a new progress bar using the given information.
-    :param total:           The total number of iteration for this progress bar.
-    :param prefix:          [Optional] The text that should be displayed at the left side of the progress bar. Note
-                            that progress bars will always stay left-aligned at the shortest possible.
-    :param suffix:          [Optional] The text that should be displayed at the very right side of the progress bar.
-    :param decimals:        [Optional] The number of decimals to display for the percentage.
-    :param bar_length:      [Optional] The graphical bar size displayed on screen. Unit is character.
-    :param keep_alive:      [Optional] Specify whether the progress bar should stay displayed forever once completed
-                            or if it should vanish.
-    :param display_time:    [Optional] Specify whether the duration since the progress has begun should be
-                            displayed. Running time will be displayed between parenthesis, whereas it will be
-                            displayed between brackets when the progress has completed.
+    :param total:                       The total number of iteration for this progress bar.
+    :param prefix:                      [Optional] The text that should be displayed at the left side of the
+                                        progress bar. Note that progress bars will always stay left-aligned at the
+                                        shortest possible.
+    :param suffix:                      [Optional] The text that should be displayed at the very right side of the
+                                        progress bar.
+    :param decimals:                    [Optional] The number of decimals to display for the percentage.
+    :param bar_length:                  [Optional] The graphical bar size displayed on screen. Unit is character.
+    :param keep_alive:                  [Optional] Specify whether the progress bar should stay displayed forever
+                                        once completed or if it should vanish.
+    :param display_time:                [Optional] Specify whether the duration since the progress has begun should
+                                        be displayed. Running time will be displayed between parenthesis, whereas it
+                                        will be displayed between brackets when the progress has completed.
     """
     super(TaskProgress, self).__init__()
     self.progress = 0

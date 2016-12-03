@@ -5,10 +5,9 @@ https://github.com/pypa/sampleproject
 """
 
 # Always prefer setuptools over distutils
-from setuptools import setup, find_packages
-# To use a consistent encoding
-from codecs import open
 from os import path
+
+from setuptools import setup, find_packages
 
 here = path.abspath(path.dirname(__file__))
 
@@ -22,7 +21,7 @@ setup(
     # Versions should comply with PEP440.  For a discussion on single-sourcing
     # the version across setup.py and the project code, see
     # https://packaging.python.org/en/latest/single_source_version.html
-    version='1.0.10',
+    version='1.1.0',
 
     description='Fork of aubricus/print_progress.py originated from StackOverflow\'s Greenstick to allow using '
                 'multiple progress bars along with regular message logger.',

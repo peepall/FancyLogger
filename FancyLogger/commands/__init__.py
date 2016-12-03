@@ -130,8 +130,11 @@ class SetConfigurationCommand(ProcessCommand):
                  exception_number,
                  permanent_progressbar_slots,
                  redraw_frequency_millis,
-                 level,
-                 task_millis_to_removal):
+                 console_level,
+                 task_millis_to_removal,
+                 console_format_strftime,
+                 console_format,
+                 file_handlers):
         """
         Defines the current configuration of the logger.
         :param message_number:              Number of simultaneously displayed messages below progress bars.
@@ -141,10 +144,24 @@ class SetConfigurationCommand(ProcessCommand):
                                             lower than this parameter.
         :param redraw_frequency_millis:     Minimum time lapse in milliseconds between two redraws. It may be
                                             more because the redraw rate depends upon time AND method calls.
-        :param level:                       The logging level (from standard logging module).
+        :param console_level:               The logging level (from standard logging module) for console output.
         :param task_millis_to_removal:      Minimum time lapse in milliseconds at maximum completion before
                                             a progress bar is removed from display. The progress bar may vanish at a
                                             further time as the redraw rate depends upon time AND method calls.
+        :param console_format_strftime:     Specify the time format for console log lines using python
+                                            strftime format.
+        :param console_format:              Specify the format of the console log lines. There are two
+                                            variables available: {T} for timestamp, {L} for level. Will then add some
+                                            tabulations in order to align text beginning for all levels.
+                                            Which will produce: '29 november 2016 21:52:12 [INFO]      my log text'
+                                                                '29 november 2016 21:52:13 [WARNING]   my log text'
+                                                                '29 november 2016 21:52:14 [DEBUG]     my log text'
+        :param file_handlers:               Specify the file handlers to use. Each file handler will use its
+                                            own regular formatter and level. Console logging is distinct from file
+                                            logging. Console logging uses custom stdout formatting, while file logging
+                                            uses regular python logging rules. All handlers are permitted except
+                                            StreamHandler if used with stdout or stderr which are reserved by this
+                                            library for custom console output.
         """
         super(SetConfigurationCommand, self).__init__()
 
@@ -152,8 +169,11 @@ class SetConfigurationCommand(ProcessCommand):
         self.exception_number = exception_number
         self.permanent_progressbar_slots = permanent_progressbar_slots
         self.redraw_frequency_millis = redraw_frequency_millis
-        self.level = level
+        self.console_level = console_level
         self.task_millis_to_removal = task_millis_to_removal
+        self.console_format_strftime = console_format_strftime
+        self.console_format = console_format
+        self.file_handlers = file_handlers
 
 
 class StacktraceCommand(ProcessCommand):
